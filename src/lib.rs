@@ -1,14 +1,10 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+mod tree;
+mod conversion;
+use conversion::get_image;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+use wasm_bindgen::prelude::*;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+#[wasm_bindgen]
+pub fn to_gallifreyan(text: &str) -> String {
+    return get_image(text);
 }
