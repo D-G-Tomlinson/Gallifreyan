@@ -196,9 +196,9 @@ impl From<Word> for Shapes {
 
         let pi = std::f64::consts::PI;
         let each = pi/num_parts as f64;
-        let start = Polar::new(WORD_RADIUS,-(pi+each)/2.0);
+        let mut start = Polar::new(WORD_RADIUS,-(pi+each)/2.0);
 
-        let result = Self::new();
+        let mut result = Self::new();
 
         for _ in 0..num_parts {
             let mid = start.rotate(each/2.0);
@@ -207,7 +207,9 @@ impl From<Word> for Shapes {
             // get the shapes for the consonant or vowel
 
             let next = end.rotate(each);
-            let connecting_arc = Arc::new(end.into(),next.into(),WORD_RADIUS,false,false,Normal);
+            let connecting_arc = Box::new(Arc::new(end.into(),next.into(),WORD_RADIUS,false,false,Normal));
+            result.push(connecting_arc);
+            start = next;
         }
         return result;
         }
