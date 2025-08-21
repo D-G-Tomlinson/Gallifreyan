@@ -23,9 +23,9 @@ enum Thickness {
 impl Thickness {
     fn val(&self) -> f64 {
         match self {
-            Thin => 1.0,
-            Normal => 2.0,
-            Thick => 4.0,
+            Thin => 0.1,
+            Normal => 0.2,
+            Thick => 0.4,
         }
     }
 }
@@ -61,14 +61,7 @@ impl Cart {
 impl From<Polar> for Cart {
     fn from(polar: Polar) -> Self {
         let x = polar.radius * polar.theta.cos();
-        let y = polar.radius * polar.theta.sin();
-
-        let x = x as f64;
-        let y = y as f64;
-
-        println!("Polar was: {:#?}",polar);
-        println!("Cart is: {:#?}",Self{x,y});
-
+        let y = -polar.radius * polar.theta.sin();
         return Self {x, y,};
     }
 }
@@ -134,7 +127,7 @@ impl Shape for Arc {
             true => 1,
             false => 0
         };
-        return format!("<path stroke-opacity=\"0\"stroke=\"{}\" stroke-width=\"{}\" d=\"M {} {} A {} {} 0 {} {} {} {}\" />",
+        return format!("<path fill-opacity=\"0\" stroke=\"{}\" stroke-width=\"{}\" d=\"M {} {} A {} {} 0 {} {} {} {}\" />",
             STROKE,
             self.thickness.val(),
             self.start.x,
@@ -179,7 +172,7 @@ impl Shape for Line {
 fn one_letter_word(letter:&Letter) -> Shapes {
     let pi = std::f64::consts::PI;
     let diff = pi/2.0;
-    let start = Polar::new(WORD_RADIUS,-(pi-diff)/2.0);
+    let start = Polar::new(WORD_RADIUS,-(pi+diff)/2.0);
     let mid = start.rotate(diff/2.0);
     let end = mid.rotate(diff/2.0);
 
@@ -203,7 +196,7 @@ impl From<Word> for Shapes {
 
         let pi = std::f64::consts::PI;
         let each = pi/num_parts as f64;
-        let start = Polar::new(WORD_RADIUS,-(pi-each)/2.0);
+        let start = Polar::new(WORD_RADIUS,-(pi+each)/2.0);
 
         let result = Self::new();
 
