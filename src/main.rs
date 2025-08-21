@@ -1,6 +1,7 @@
 use std::io;
 mod conversion;
 mod tree;
+mod shape;
 
 use conversion::get_image;
 

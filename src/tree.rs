@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use crate::conversion::Svg;
 use crate::tree::Arc::{Above, Big, On};
-use crate::tree::Letter::C_opt;
+use crate::tree::Letter::COpt;
 
 #[derive(Debug,Copy, Clone)]
 enum Arc{
@@ -35,7 +35,7 @@ struct Vowel {
     double:bool,
 }
 fn get_v(letter:Vowels,double:bool) -> Letter {
-    return Letter::V_opt(Vowel{v:letter, double});
+    return Letter::VOpt(Vowel{v:letter, double});
 }
 #[derive(Debug,Clone)]
 struct Consonant {
@@ -45,13 +45,12 @@ struct Consonant {
 }
 fn get_c(arc: Arc,marks: Marks) -> Letter {
     let diacritic = None;
-    return Letter::C_opt(Consonant {arc,marks,diacritic});
+    return COpt(Consonant {arc,marks,diacritic});
 }
 #[derive(Debug,Clone)]
 enum Letter {
-    C_opt(Consonant),
-    V_opt(Vowel),
-    A_opt,
+    COpt(Consonant),
+    VOpt(Vowel),
 }
 
 fn chars_to_letters(chars:Vec<char>) -> Result<Vec<Letter>,&'static str> {
@@ -128,17 +127,17 @@ fn join_cv(letters:Vec<Letter>) -> Vec<Letter> {
 
     while i < letters.len()-1 {
         match &letters[i] {
-            C_opt(c) => {
+            COpt(c) => {
                 match c.diacritic {
-                    Some(_) => result.push(Letter::C_opt(c.clone())),
+                    Some(_) => result.push(Letter::COpt(c.clone())),
                     None => {
                         match &letters[i+1] {
-                            Letter::V_opt(v) => {
-                                let new_letter = Letter::C_opt(Consonant{arc:c.arc,marks:c.marks,diacritic:Some(v.clone())});
+                            Letter::VOpt(v) => {
+                                let new_letter = Letter::COpt(Consonant{arc:c.arc,marks:c.marks,diacritic:Some(v.clone())});
                                 result.push(new_letter);
                                 i += 1;
                             },
-                            _ => result.push(Letter::C_opt(c.clone())),
+                            _ => result.push(Letter::COpt(c.clone())),
                         }
                     }
                 }
