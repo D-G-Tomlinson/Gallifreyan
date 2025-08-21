@@ -5,8 +5,10 @@ use std::collections::HashMap;
 
 
 use crate::conversion::Svg;
-use crate::tree::Arc::{Above, Big, On};
-use crate::tree::Letter::COpt;
+use crate::tree::Arc::{Above, Big, Small, On};
+use crate::tree::Letter::{COpt, VOpt};
+use crate::tree::Marks::{Blank,Dot,Line};
+use crate::tree::Vowels::{A,E,I,O,U};
 
 #[derive(Debug,Copy, Clone)]
 enum Arc{
@@ -48,51 +50,51 @@ fn get_c(arc: Arc,marks: Marks) -> Letter {
     return COpt(Consonant {arc,marks,diacritic});
 }
 #[derive(Debug,Clone)]
-enum Letter {
+pub enum Letter {
     COpt(Consonant),
     VOpt(Vowel),
 }
 
 fn chars_to_letters(chars:Vec<char>) -> Result<Vec<Letter>,&'static str> {
     let singles:HashMap<char,Letter> = HashMap::from([
-        ('a',get_v(Vowels::A,false)),
-        ('e',get_v(Vowels::E,false)),
-        ('i',get_v(Vowels::I,false)),
-        ('o',get_v(Vowels::O,false)),
-        ('u',get_v(Vowels::U,false)),
-        ('b',get_c(Big,Marks::Blank)),
-        ('d',get_c(Big,Marks::Dot(3))),
-        ('g',get_c(Big,Marks::Line(1))),
-        ('h',get_c(Big,Marks::Line(2))),
-        ('f',get_c(Big,Marks::Line(3))),
-        ('j',get_c(Above,Marks::Blank)),
-        ('k',get_c(Above,Marks::Dot(2))),
-        ('l',get_c(Above,Marks::Dot(3))),
-        ('c',get_c(Above,Marks::Dot(4))),
-        ('n',get_c(Above,Marks::Line(1))),
-        ('p',get_c(Above,Marks::Line(2))),
-        ('m',get_c(Above,Marks::Line(3))),
-        ('t',get_c(Arc::Small,Marks::Blank)),
-        ('r',get_c(Arc::Small,Marks::Dot(3))),
-        ('v',get_c(Arc::Small,Marks::Line(1))),
-        ('w',get_c(Arc::Small,Marks::Line(2))),
-        ('s',get_c(Arc::Small,Marks::Line(3))),
-        ('y',get_c(On,Marks::Dot(2))),
-        ('z',get_c(On,Marks::Dot(3))),
-        ('q',get_c(On,Marks::Dot(4))),
-        ('x',get_c(On,Marks::Line(2))),
+        ('a',get_v(A,false)),
+        ('e',get_v(E,false)),
+        ('i',get_v(I,false)),
+        ('o',get_v(O,false)),
+        ('u',get_v(U,false)),
+        ('b',get_c(Big,Blank)),
+        ('d',get_c(Big,Dot(3))),
+        ('g',get_c(Big,Line(1))),
+        ('h',get_c(Big,Line(2))),
+        ('f',get_c(Big,Line(3))),
+        ('j',get_c(Above,Blank)),
+        ('k',get_c(Above,Dot(2))),
+        ('l',get_c(Above,Dot(3))),
+        ('c',get_c(Above,Dot(4))),
+        ('n',get_c(Above,Line(1))),
+        ('p',get_c(Above,Line(2))),
+        ('m',get_c(Above,Line(3))),
+        ('t',get_c(Small,Blank)),
+        ('r',get_c(Small,Dot(3))),
+        ('v',get_c(Small,Line(1))),
+        ('w',get_c(Small,Line(2))),
+        ('s',get_c(Small,Line(3))),
+        ('y',get_c(On,Dot(2))),
+        ('z',get_c(On,Dot(3))),
+        ('q',get_c(On,Dot(4))),
+        ('x',get_c(On,Line(2))),
     ]);
     let doubles:HashMap<(char,char),Letter> = HashMap::from([
-        (('c','h'),get_c(Big,Marks::Dot(2))),
-        (('n','d'),get_c(Big,Marks::Dot(4))),
-        (('p','h'),get_c(Above,Marks::Dot(1))),
-        (('w','h'),get_c(Arc::Small,Marks::Dot(1))),
-        (('s','h'),get_c(Arc::Small,Marks::Dot(2))),
-        (('n','t'),get_c(Arc::Small,Marks::Dot(4))),
-        (('t','h'),get_c(Arc::On,Marks::Blank)),
-        (('g','h'),get_c(Arc::On,Marks::Dot(1))),
-        (('q','u'),get_c(Arc::On,Marks::Line(1))),
-        (('n','g'),get_c(Arc::On,Marks::Line(3))),
+        (('c','h'),get_c(Big,Dot(2))),
+        (('n','d'),get_c(Big,Dot(4))),
+        (('p','h'),get_c(Above,Dot(1))),
+        (('w','h'),get_c(Small,Dot(1))),
+        (('s','h'),get_c(Small,Dot(2))),
+        (('n','t'),get_c(Small,Dot(4))),
+        (('t','h'),get_c(On,Blank)),
+        (('g','h'),get_c(On,Dot(1))),
+        (('q','u'),get_c(On,Line(1))),
+        (('n','g'),get_c(On,Line(3))),
         (('a','a'),get_v(Vowels::A,true)),
         (('e','e'),get_v(Vowels::E,true)),
         (('i','i'),get_v(Vowels::I,true)),
@@ -164,5 +166,24 @@ impl TryFrom<Vec<char>> for Word {
 
 #[derive(Debug,Clone)]
 pub struct Word(Vec<Letter>);
+
+impl Word {
+    pub fn word(&self) -> &Vec<Letter> {
+        &self.0
+    }
+}
+
+impl Word {
+    pub fn get_num_things(&self) -> u32 {
+        let mut i = 0;
+        for thing in &self.0 {
+            match thing {
+                COpt(_) => i += 1,
+                VOpt(_) => i += 1,
+            }//this will be important for apostrophes
+        }
+        return i;
+    }
+}
 //can work on sentances later
 
