@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 use crate::shape::*;
-use crate::shape::Thickness::{Normal,Thin};
+use crate::shape::Thickness::{Normal, Thick, Thin};
 use crate::tree::{Letter, Word, Consonant, Vowel, Marks, Vowels};
 use crate::tree::Vowels::{A,E,I,O,U};
 use crate::tree::Arc::{Big,Small,Above,On};
@@ -135,7 +135,9 @@ fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Marks,diacritic:&O
     let radius = std_dist * CONSONANT_MODIFIER;
 
     let mut shapes = Shapes::new();
-    shapes.push(Box::new(Arc::new(in_start.into(), in_end.into(), radius, true, true, Normal)));
+    shapes.push(Box::new(Arc::new(in_start, in_end, radius, true, true, Normal)));
+    shapes.push(Box::new(Circle::new(in_start,Normal.val()*0.5,None)));
+    shapes.push(Box::new(Circle::new(in_end,Normal.val()*0.5,None)));
     let start_arc = Arc::new(start.into(),in_start.into(),middle.radius,false,false,Normal);
     let end_arc = Arc::new(in_end.into(),end.into(),middle.radius,false,false,Normal);
     shapes.push(Box::new(start_arc));
@@ -192,6 +194,8 @@ fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Mar
 fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Marks,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER;
     let mut shapes:Shapes = vec![Box::new(Arc::new(start.into(),end.into(),radius,false,true,Normal))];
+    shapes.push(Box::new(Circle::new(start.into(),Normal.val()*0.5,None)));
+    shapes.push(Box::new(Circle::new(end.into(),Normal.val()*0.5,None)));
 
     if let Some(v) = diacritic {
         let outer = middle.extend(std_dist*VOWEL_MODIFIER*1.1);
