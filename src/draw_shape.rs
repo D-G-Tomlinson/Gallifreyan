@@ -127,7 +127,7 @@ fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),
 }
 
 
-fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Marks,diacritic:&Option<Vowel>) -> Shapes {
+fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
     let diff = (end.theta - start.theta)/4.0;
     let in_start:Cart = start.rotate(diff).into();
     let in_end:Cart = end.rotate(-diff).into();
@@ -143,22 +143,38 @@ fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Marks,diacritic:&O
     shapes.push(Box::new(start_arc));
     shapes.push(Box::new(end_arc));
 
+    let centre_radius = get_centre_radius(WORD_RADIUS,radius,end.theta-start.theta-2.0*diff,true);
+    let centre = Polar::new(centre_radius,middle.theta);
+
+    let avoid_centre:bool;
     if let Some(v) = diacritic {
         let c_start:Cart = start.into();
         let v_std_dist = c_start.distance(&end.into());
-        let v_pos = get_big_arc_v_pos(middle,radius,end.theta-start.theta-2.0*diff,v_std_dist);
+        let v_pos = get_big_arc_v_pos(middle,radius,v_std_dist,centre);
         shapes.append(&mut draw_vowel(&v,v_pos,v_std_dist));
+        avoid_centre = v.v.centre()
+    }else {
+        avoid_centre = false;
+    }
+    if let Some(m) = marks {
+        let relative_pos = get_big_arc_mark_pos(centre,in_start,in_end);
+        println!("Relative pos: {:?}", relative_pos);
+        shapes.append(&mut add_marks(m,centre,relative_pos,avoid_centre,std_dist))
+
     }
     return shapes;
 }
 
-fn get_big_arc_v_pos(middle:Polar, inner_radius:f64, alpha:f64,v_std_dist:f64) -> (Polar,Polar,Polar) {
+fn get_big_arc_mark_pos(centre:Polar,start:Cart,end:Cart) -> (Polar,Polar) {
+    let centre:Cart = centre.into();
+    let start = centre.to(&start);
+    let end = centre.to(&end);
+    println!("start: {:?}, end: {:?}", start, end);
+    return (start.into(),end.into());
+}
+
+fn get_big_arc_v_pos(middle:Polar, inner_radius:f64,v_std_dist:f64,centre:Polar) -> (Polar,Polar,Polar) {
     let outer = middle.extend(v_std_dist*VOWEL_MODIFIER*1.1);
-
-    let beta = middle.theta;
-    let centre_radius = get_centre_radius(WORD_RADIUS,inner_radius,alpha,true);
-    let centre = Polar::new(centre_radius,beta);
-
     let middle = centre;
     let inner = centre.extend(-inner_radius);
     return (inner,middle,outer);
@@ -176,7 +192,7 @@ fn get_centre_radius(r1:f64,r2:f64,alpha:f64,inner:bool) -> f64 {
     let result =  r2 * ep.sin()/shal;
     return result;
 }
-fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Marks,diacritic:&Option<Vowel>) -> Shapes {
+fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER*0.5;
     let centre = middle.extend(-radius*1.1).into();
     let mut shapes:Shapes =  vec![Box::new(Circle::new(centre,radius, Some(Normal)))];
@@ -191,7 +207,7 @@ fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Mar
 
     return shapes;
 }
-fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Marks,diacritic:&Option<Vowel>) -> Shapes {
+fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER;
     let mut shapes:Shapes = vec![Box::new(Arc::new(start.into(),end.into(),radius,false,true,Normal))];
     shapes.push(Box::new(Circle::new(start.into(),Normal.val()*0.5,None)));
@@ -208,7 +224,7 @@ fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Mar
     return shapes;
 }
 
-fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Marks,diacritic:&Option<Vowel>) -> Shapes {
+fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER*0.5;
     let mut shapes:Shapes = vec![Box::new(Circle::new(middle.into(),radius, Some(Normal)))];
 
@@ -219,5 +235,34 @@ fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Marks,
         shapes.append(&mut draw_vowel(v,(inner,middle,outer),std_dist));
     }
 
+    return shapes;
+}
+fn add_marks(marks:&Marks,centre:Polar,(start,end):(Polar,Polar),avoid_centre:bool,std_dist:f64) -> Shapes {//centre co-ord is wrt the word's centre, start and end are wrt centre
+    let (num,is_line):(i32,bool) = match marks {
+        Marks::Line(n) => (*n,true),
+        Marks::Dot(n) => (*n,false),
+    };
+    let diff_num:f64 = if avoid_centre && (num%2)!=0 {
+        num as f64+ 2f64
+    } else {
+        num as f64+ 1f64
+    };
+    let diff = (2.0*PI + start.theta -end.theta)/(diff_num);
+    let centre:Cart = centre.into();
+    let mut ppos = start;
+    let mut shapes:Shapes = Vec::new();
+    let mut cpos:Cart;
+    for _ in 0..num {
+        ppos=ppos.rotate(-diff);
+        cpos = ppos.into();
+        cpos.shove(centre.x,centre.y);
+        shapes.push(if is_line {
+            let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER*0.3).into();
+            end.shove(centre.x,centre.y);
+            Box::new(Line::new(cpos,end,Normal))
+        } else {
+            Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,None))
+        });
+    }
     return shapes;
 }

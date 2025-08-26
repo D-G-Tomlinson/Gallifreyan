@@ -51,8 +51,8 @@ impl Polar {
 }
 #[derive(Debug,Clone,Copy)]
 pub struct Cart {
-    x:f64,
-    y:f64,
+    pub x:f64,
+    pub y:f64,
 }
 impl Cart {
     pub fn shove(&mut self,dx:f64,dy:f64) {
@@ -85,7 +85,7 @@ impl From<Polar> for Cart {
 impl From<Cart> for Polar {
     fn from(cart: Cart) -> Self {
         let x = cart.x;
-        let y = cart.y;
+        let y = -cart.y;
         let radius = (x*x + y*y).sqrt();
         let theta:f64;
         if y == 0.0 {

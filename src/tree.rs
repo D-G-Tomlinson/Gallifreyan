@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use crate::conversion::Svg;
 use crate::tree::Arc::{Above, Big, Small, On};
 use crate::tree::Letter::{COpt, VOpt};
-use crate::tree::Marks::{Blank,Dot,Line};
+use crate::tree::Marks::{Dot,Line};
 use crate::tree::Vowels::{A,E,I,O,U};
 
 #[derive(Debug,Copy, Clone)]
@@ -19,9 +19,8 @@ pub enum Arc{
 }
 #[derive(Debug,Copy, Clone)]
 pub enum Marks {
-    Blank,
-    Dot(u8),
-    Line(u8),
+    Dot(i32),
+    Line(i32),
 }
 #[derive(Debug,Copy, Clone)]
 pub enum Vowels {
@@ -30,6 +29,14 @@ pub enum Vowels {
     I,
     O,
     U
+}
+impl Vowels {
+    pub fn centre(&self) -> bool {
+        match self {
+            I|O => true,
+            _ => false
+        }
+    }
 }
 #[derive(Debug,Clone)]
 pub struct Vowel {
@@ -42,10 +49,10 @@ fn get_v(letter:Vowels,double:bool) -> Letter {
 #[derive(Debug,Clone)]
 pub struct Consonant {
     pub arc: Arc,
-    pub marks: Marks,
+    pub marks: Option<Marks>,
     pub diacritic: Option<Vowel>,
 }
-fn get_c(arc: Arc,marks: Marks) -> Letter {
+fn get_c(arc: Arc,marks: Option<Marks>) -> Letter {
     let diacritic = None;
     return COpt(Consonant {arc,marks,diacritic});
 }
@@ -62,39 +69,39 @@ fn chars_to_letters(chars:Vec<char>) -> Result<Vec<Letter>,&'static str> {
         ('i',get_v(I,false)),
         ('o',get_v(O,false)),
         ('u',get_v(U,false)),
-        ('b',get_c(Big,Blank)),
-        ('d',get_c(Big,Dot(3))),
-        ('g',get_c(Big,Line(1))),
-        ('h',get_c(Big,Line(2))),
-        ('f',get_c(Big,Line(3))),
-        ('j',get_c(Above,Blank)),
-        ('k',get_c(Above,Dot(2))),
-        ('l',get_c(Above,Dot(3))),
-        ('c',get_c(Above,Dot(4))),
-        ('n',get_c(Above,Line(1))),
-        ('p',get_c(Above,Line(2))),
-        ('m',get_c(Above,Line(3))),
-        ('t',get_c(Small,Blank)),
-        ('r',get_c(Small,Dot(3))),
-        ('v',get_c(Small,Line(1))),
-        ('w',get_c(Small,Line(2))),
-        ('s',get_c(Small,Line(3))),
-        ('y',get_c(On,Dot(2))),
-        ('z',get_c(On,Dot(3))),
-        ('q',get_c(On,Dot(4))),
-        ('x',get_c(On,Line(2))),
+        ('b',get_c(Big,None)),
+        ('d',get_c(Big,Some(Dot(3)))),
+        ('g',get_c(Big,Some(Line(1)))),
+        ('h',get_c(Big,Some(Line(2)))),
+        ('f',get_c(Big,Some(Line(3)))),
+        ('j',get_c(Above,None)),
+        ('k',get_c(Above,Some(Dot(2)))),
+        ('l',get_c(Above,Some(Dot(3)))),
+        ('c',get_c(Above,Some(Dot(4)))),
+        ('n',get_c(Above,Some(Line(1)))),
+        ('p',get_c(Above,Some(Line(2)))),
+        ('m',get_c(Above,Some(Line(3)))),
+        ('t',get_c(Small,None)),
+        ('r',get_c(Small,Some(Dot(3)))),
+        ('v',get_c(Small,Some(Line(1)))),
+        ('w',get_c(Small,Some(Line(2)))),
+        ('s',get_c(Small,Some(Line(3)))),
+        ('y',get_c(On,Some(Dot(2)))),
+        ('z',get_c(On,Some(Dot(3)))),
+        ('q',get_c(On,Some(Dot(4)))),
+        ('x',get_c(On,Some(Line(2)))),
     ]);
     let doubles:HashMap<(char,char),Letter> = HashMap::from([
-        (('c','h'),get_c(Big,Dot(2))),
-        (('n','d'),get_c(Big,Dot(4))),
-        (('p','h'),get_c(Above,Dot(1))),
-        (('w','h'),get_c(Small,Dot(1))),
-        (('s','h'),get_c(Small,Dot(2))),
-        (('n','t'),get_c(Small,Dot(4))),
-        (('t','h'),get_c(On,Blank)),
-        (('g','h'),get_c(On,Dot(1))),
-        (('q','u'),get_c(On,Line(1))),
-        (('n','g'),get_c(On,Line(3))),
+        (('c','h'),get_c(Big,Some(Dot(2)))),
+        (('n','d'),get_c(Big,Some(Dot(4)))),
+        (('p','h'),get_c(Above,Some(Dot(1)))),
+        (('w','h'),get_c(Small,Some(Dot(1)))),
+        (('s','h'),get_c(Small,Some(Dot(2)))),
+        (('n','t'),get_c(Small,Some(Dot(4)))),
+        (('t','h'),get_c(On,None)),
+        (('g','h'),get_c(On,Some(Dot(1)))),
+        (('q','u'),get_c(On,Some(Line(1)))),
+        (('n','g'),get_c(On,Some(Line(3)))),
         (('a','a'),get_v(Vowels::A,true)),
         (('e','e'),get_v(Vowels::E,true)),
         (('i','i'),get_v(Vowels::I,true)),
