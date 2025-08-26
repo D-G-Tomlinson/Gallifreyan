@@ -5,7 +5,7 @@ use crate::tree::{Letter, Word, Consonant, Vowel, Marks, Vowels};
 use crate::tree::Vowels::{A,E,I,O,U};
 use crate::tree::Arc::{Big,Small,Above,On};
 
-const VOWEL_MODIFIER:f64 = 0.2;
+const VOWEL_MODIFIER:f64 = 0.1;
 const CONSONANT_MODIFIER:f64 = 0.6;
 
 fn one_letter_word(letter:&Letter) -> Shapes {
@@ -119,7 +119,7 @@ fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),
     let mut new_shapes:Shapes= match consonant.arc {
         Big => get_big_arc((start,middle,end),&consonant.marks,&consonant.diacritic),
         Above => get_above_arc((start,middle,end),std_dist,&consonant.marks,&consonant.diacritic),
-        Small =>  get_small_arc((start,middle,end),std_dist),
+        Small =>  get_small_arc((start,middle,end),std_dist,&consonant.marks,&consonant.diacritic),
         On => get_on_arc((start,middle,end),std_dist)
     };
     shapes.append(&mut new_shapes);
@@ -151,7 +151,7 @@ fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Marks,diacritic:&O
 }
 
 fn get_big_arc_v_pos(middle:Polar, inner_radius:f64, alpha:f64,v_std_dist:f64) -> (Polar,Polar,Polar) {
-    let outer = middle.extend(v_std_dist*VOWEL_MODIFIER*0.99);
+    let outer = middle.extend(v_std_dist*VOWEL_MODIFIER*1.1);
 
     let beta = middle.theta;
     let centre_radius = get_centre_radius(WORD_RADIUS,inner_radius,alpha,true);
@@ -180,18 +180,28 @@ fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Mar
     let mut shapes:Shapes =  vec![Box::new(Circle::new(centre,radius, Some(Normal)))];
 
     if let Some(v) = diacritic {
-        let outer = middle.extend(std_dist*VOWEL_MODIFIER*0.99);
+        let outer = middle.extend(std_dist*VOWEL_MODIFIER*1.1);
         let middle = middle.extend(-radius*1.1);
         let inner = middle.extend(-radius);
-        let v_pos = (start,middle,end);
+        let v_pos = (inner,middle,outer);
         shapes.append(&mut draw_vowel(&v,v_pos,std_dist));
     }
 
     return shapes;
 }
-fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
+fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Marks,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER;
-    return vec![Box::new(Arc::new(start.into(),end.into(),radius,false,true,Normal))];
+    let mut shapes:Shapes = vec![Box::new(Arc::new(start.into(),end.into(),radius,false,true,Normal))];
+
+    if let Some(v) = diacritic {
+        let outer = middle.extend(std_dist*VOWEL_MODIFIER*1.1);
+        let centre_radius = get_centre_radius(WORD_RADIUS,radius,end.theta-start.theta,false);
+        let centre = Polar::new(centre_radius,middle.theta);
+        let inner = centre.extend(-radius);
+        let middle = Polar::new((inner.radius+WORD_RADIUS)/2.0,middle.theta);
+        shapes.append(&mut draw_vowel(v,(inner,middle,outer),std_dist));
+    }
+    return shapes;
 }
 
 fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
