@@ -1,5 +1,6 @@
 use std::convert::From;
 use std::boxed::Box;
+use std::f64::consts::PI;
 use wasm_bindgen::link_to;
 use crate::tree::Word;
 use crate::tree::Letter;
@@ -37,6 +38,7 @@ pub struct Polar {
 }
 impl Polar {
     pub fn new(radius:f64, theta:f64) -> Self {
+        let theta = theta.rem_euclid(2.0*PI);
         Self { radius, theta }
     }
     pub fn rotate(&self, dt:f64) -> Self {
@@ -66,6 +68,11 @@ impl Cart {
     pub fn origin() -> Self {
         Self { x: 0.0, y: 0.0 }
     }
+    pub fn to(&self, other:&Self) -> Self {
+        let x = other.x-self.x;
+        let y = other.y-self.y;
+        return Self {x,y}
+    }
 }
 impl From<Polar> for Cart {
     fn from(polar: Polar) -> Self {
@@ -74,6 +81,32 @@ impl From<Polar> for Cart {
         return Self {x, y,};
     }
 }
+
+impl From<Cart> for Polar {
+    fn from(cart: Cart) -> Self {
+        let x = cart.x;
+        let y = cart.y;
+        let radius = (x*x + y*y).sqrt();
+        let theta:f64;
+        if y == 0.0 {
+            theta = 0.0;
+        } else {
+            theta = (x/y).atan();
+        }
+        let new_theta:f64;
+        if x < 0.0 {
+            if theta <= 0.0 {
+                new_theta = theta + PI;
+            } else {
+                new_theta = theta - PI;
+            }
+        } else {
+            new_theta = theta;
+        }
+        return Polar::new(radius, new_theta);
+    }
+}
+
 pub struct Circle {
     centre: Cart,
     radius:f64,
