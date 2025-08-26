@@ -1,6 +1,6 @@
 use crate::shape::*;
 use crate::shape::Thickness::{Normal,Thin};
-use crate::tree::{Letter, Word, Consonant, Vowel};
+use crate::tree::{Letter, Word, Consonant, Vowel, Marks, Vowels};
 use crate::tree::Vowels::{A,E,I,O,U};
 use crate::tree::Arc::{Big,Small,Above,On};
 
@@ -116,7 +116,7 @@ fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),
     }
 
     let mut new_shapes:Shapes= match consonant.arc {
-        Big => get_big_arc((start,middle,end)),
+        Big => get_big_arc((start,middle,end),&consonant.marks,&consonant.diacritic),
         Above => get_above_arc((start,middle,end),std_dist),
         Small =>  get_small_arc((start,middle,end),std_dist),
         On => get_on_arc((start,middle,end),std_dist)
@@ -126,7 +126,7 @@ fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),
 }
 
 
-fn get_big_arc((start,middle,end):(Polar,Polar,Polar)) -> Shapes {
+fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Marks,diacritic:&Option<Vowel>) -> Shapes {
     let diff = (end.theta - start.theta)/4.0;
     let in_start:Cart = start.rotate(diff).into();
     let in_end:Cart = end.rotate(-diff).into();
@@ -139,7 +139,26 @@ fn get_big_arc((start,middle,end):(Polar,Polar,Polar)) -> Shapes {
     let end_arc = Arc::new(in_end.into(),end.into(),middle.radius,false,false,Normal);
     shapes.push(Box::new(start_arc));
     shapes.push(Box::new(end_arc));
+
+    if let Some(v) = diacritic {
+        let c_start:Cart = start.into();
+        let v_std_dist = c_start.distance(&end.into());
+        let v_pos = get_big_arc_v_pos((start,middle,end),radius,end.theta-start.theta-2.0*diff,v_std_dist);
+        shapes.append(&mut draw_vowel(&v,v_pos,v_std_dist));
+    }
     return shapes;
+}
+
+fn get_big_arc_v_pos((start,middle,end):(Polar,Polar,Polar), inner_radius:f64, alpha:f64,v_std_dist:f64) -> (Polar,Polar,Polar) {
+    let outer = middle.extend(v_std_dist*VOWEL_MODIFIER*0.99);
+
+    let beta = middle.theta;
+    let centre_radius = inner_radius/(alpha/2.0).tan();
+    let centre = Polar::new(centre_radius,beta);
+
+    let middle = centre;
+    let inner = centre.extend(-inner_radius);
+    return (inner,middle,outer);
 }
 fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER*0.5;

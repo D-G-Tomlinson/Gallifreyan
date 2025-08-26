@@ -148,7 +148,9 @@ fn join_cv(letters:Vec<Letter>) -> Vec<Letter> {
         }
         i += 1;
     }
-    result.push(letters[letters.len()-1].clone());
+    if i < letters.len(){
+        result.push(letters[i].clone());
+    }
     return result;
 }
 
