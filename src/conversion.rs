@@ -5,6 +5,8 @@ use crate::tree::Word;
 use crate::shape::Shapes;
 use crate::shape::WORD_RADIUS;
 
+use crate::draw_shape::draw_word;
+
 pub struct Svg(String);
 impl Svg {
     pub fn svg(self) -> String { self.0 }
@@ -18,7 +20,7 @@ impl TryFrom<String> for Svg {
         }
         let input:Vec<char> = input.into_iter().collect();
         let word:Word = Word::try_from(input)?;
-        let mut shapes = Shapes::from(word.clone());
+        let mut shapes =draw_word(word);
 
         let diff = 1.1 * WORD_RADIUS;
         
@@ -28,17 +30,17 @@ impl TryFrom<String> for Svg {
 
         let els:Vec<String> = shapes.into_iter().map(|shape| shape.to_element()).collect();
 
-        let length = 2.4*WORD_RADIUS;
+        let length = 3.0*WORD_RADIUS;
 
         let mut start =
             format!("<svg
-  width=\"100mm\"
-  height=\"100mm\"
+  width=\"600mm\"
+  height=\"250mm\"
   viewBox=\"0 0 {} {}\"
   version=\"1.1\"
   xmlns=\"https://github.com/D-G-Tomlinson/Gallifreyan\"> ",length,length);
 
-        for el in els {
+        for el in &els {
             start.push_str(&el);
         }
         start.push_str("</svg>");

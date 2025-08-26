@@ -1,6 +1,7 @@
 mod tree;
 mod conversion;
 mod shape;
+mod draw_shape;
 
 use conversion::get_image;
 use wasm_bindgen::prelude::*;

@@ -11,20 +11,20 @@ use crate::tree::Marks::{Blank,Dot,Line};
 use crate::tree::Vowels::{A,E,I,O,U};
 
 #[derive(Debug,Copy, Clone)]
-enum Arc{
+pub enum Arc{
     Big,
     Above,
     Small,
     On
 }
 #[derive(Debug,Copy, Clone)]
-enum Marks {
+pub enum Marks {
     Blank,
     Dot(u8),
     Line(u8),
 }
 #[derive(Debug,Copy, Clone)]
-enum Vowels {
+pub enum Vowels {
     A,
     E,
     I,
@@ -32,15 +32,15 @@ enum Vowels {
     U
 }
 #[derive(Debug,Clone)]
-struct Vowel {
-    v:Vowels,
-    double:bool,
+pub struct Vowel {
+    pub v:Vowels,
+    pub double:bool,
 }
 fn get_v(letter:Vowels,double:bool) -> Letter {
     return Letter::VOpt(Vowel{v:letter, double});
 }
 #[derive(Debug,Clone)]
-struct Consonant {
+pub struct Consonant {
     arc: Arc,
     marks: Marks,
     diacritic: Option<Vowel>,
