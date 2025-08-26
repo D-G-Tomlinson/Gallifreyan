@@ -79,18 +79,34 @@ fn draw_loose_vowel(vowel:&Vowel, (start,middle,end):(Polar,Polar,Polar),std_dis
 fn draw_vowel(vowel:&Vowel, (inner,middle,outer):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
     let mut shapes = Shapes::new();
 
-    let centre = match vowel.v {
+    let polar_centre = match vowel.v {
         A => outer,
         E|I|U => middle,
         O => inner,
     };
-    let centre:Cart = centre.into();
+    let cart_centre:Cart = polar_centre.into();
     let radius = std_dist * VOWEL_MODIFIER;
-    let circle = Circle::new(centre,radius,Some(Normal));
+    let circle = Circle::new(cart_centre, radius, Some(Normal));
     shapes.push(Box::new(circle));
     if vowel.double {
-        let other_circle = Circle::new(centre,radius/2.0,Some(Normal));
+        let other_circle = Circle::new(cart_centre, radius/2.0, Some(Normal));
         shapes.push(Box::new(other_circle));
+    }
+
+    match vowel.v {
+        I => {
+            let start:Cart = polar_centre.extend(-radius).into();
+            let end = Cart::origin();
+            let line = Line::new(start,end,Normal);
+            shapes.push(Box::new(line));
+        },
+        U => {
+            let start:Cart = polar_centre.extend(radius).into();
+            let end:Cart = Polar::new(WORD_RADIUS*1.3,polar_centre.theta).into();
+            let line = Line::new(start,end,Normal);
+            shapes.push(Box::new(line));
+        },
+        _ => ()
     }
     return shapes;
 

@@ -32,8 +32,8 @@ impl Thickness {
 
 #[derive(Debug,Clone,Copy)]
 pub struct Polar {
-    radius:f64,
-    theta:f64,//anticlockwise from x-axis, as usual
+    pub radius:f64,
+    pub theta:f64,//anticlockwise from x-axis, as usual
 }
 impl Polar {
     pub fn new(radius:f64, theta:f64) -> Self {
@@ -62,6 +62,9 @@ impl Cart {
         let dy = self.y - other.y;
         let distance = dx*dx + dy*dy;
         return distance.sqrt();
+    }
+    pub fn origin() -> Self {
+        Self { x: 0.0, y: 0.0 }
     }
 }
 impl From<Polar> for Cart {
@@ -165,7 +168,7 @@ impl Shape for Line {
     }
     fn to_element(&self) -> String {
         let width = self.thickness.val();
-        return format!("<path stroke=\"{}\" stroke-width=\"{}\" M {} {} L {} {} />",
+        return format!("<path stroke=\"{}\" stroke-width=\"{}\" d=\"M {} {} L {} {}\" />",
                        STROKE,
                        self.thickness.val(),
                        self.start.x,
