@@ -41,9 +41,9 @@ fn get_v(letter:Vowels,double:bool) -> Letter {
 }
 #[derive(Debug,Clone)]
 pub struct Consonant {
-    arc: Arc,
-    marks: Marks,
-    diacritic: Option<Vowel>,
+    pub arc: Arc,
+    pub marks: Marks,
+    pub diacritic: Option<Vowel>,
 }
 fn get_c(arc: Arc,marks: Marks) -> Letter {
     let diacritic = None;

@@ -1,9 +1,11 @@
 use crate::shape::*;
-use crate::shape::Thickness::Normal;
+use crate::shape::Thickness::{Normal,Thin};
 use crate::tree::{Letter, Word, Consonant, Vowel};
 use crate::tree::Vowels::{A,E,I,O,U};
+use crate::tree::Arc::{Big,Small,Above,On};
 
 const VOWEL_MODIFIER:f64 = 0.2;
+const CONSONANT_MODIFIER:f64 = 0.6;
 
 fn one_letter_word(letter:&Letter) -> Shapes {
     let pi = std::f64::consts::PI;
@@ -56,13 +58,10 @@ pub fn draw_word(word: Word) -> Shapes {
 
 fn draw_letter(letter:&Letter, (start,middle,end):(Polar,Polar,Polar)) -> Shapes {
     let std_dist = Cart::from(start).distance(&Cart::from(end));
-    if let Letter::VOpt(v) = letter {
-        return draw_loose_vowel(v,(start,middle,end),std_dist);
+    return match letter {
+        Letter::VOpt(v) => draw_loose_vowel(v,(start,middle,end),std_dist),
+        Letter::COpt(c) => draw_consonant(c,(start,middle,end),std_dist)
     }
-    let mut shapes = Shapes::new();
-
-
-    return shapes;
 }
 
 fn draw_loose_vowel(vowel:&Vowel, (start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
@@ -89,10 +88,9 @@ fn draw_vowel(vowel:&Vowel, (inner,middle,outer):(Polar,Polar,Polar),std_dist:f6
     let circle = Circle::new(cart_centre, radius, Some(Normal));
     shapes.push(Box::new(circle));
     if vowel.double {
-        let other_circle = Circle::new(cart_centre, radius/2.0, Some(Normal));
+        let other_circle = Circle::new(cart_centre, radius/2.0, Some(Thin));
         shapes.push(Box::new(other_circle));
     }
-
     match vowel.v {
         I => {
             let start:Cart = polar_centre.extend(-radius).into();
@@ -109,5 +107,50 @@ fn draw_vowel(vowel:&Vowel, (inner,middle,outer):(Polar,Polar,Polar),std_dist:f6
         _ => ()
     }
     return shapes;
+}
+fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
+    let mut shapes = Shapes::new();
+    match consonant.arc {
+        Above|On => shapes.push(Box::new(crate::shape::Arc::new(start.into(), end.into(), WORD_RADIUS, false, false, crate::shape::Thickness::Normal))),
+        _ => ()
+    }
 
+    let mut new_shapes:Shapes= match consonant.arc {
+        Big => get_big_arc((start,middle,end)),
+        Above => get_above_arc((start,middle,end),std_dist),
+        Small =>  get_small_arc((start,middle,end),std_dist),
+        On => get_on_arc((start,middle,end),std_dist)
+    };
+    shapes.append(&mut new_shapes);
+    return shapes;
+}
+
+
+fn get_big_arc((start,middle,end):(Polar,Polar,Polar)) -> Shapes {
+    let diff = (end.theta - start.theta)/4.0;
+    let in_start:Cart = start.rotate(diff).into();
+    let in_end:Cart = end.rotate(-diff).into();
+    let std_dist = in_start.distance(&in_end);
+    let radius = std_dist * CONSONANT_MODIFIER;
+
+    let mut shapes = Shapes::new();
+    shapes.push(Box::new(Arc::new(in_start.into(), in_end.into(), radius, true, true, Normal)));
+    let start_arc = Arc::new(start.into(),in_start.into(),middle.radius,false,false,Normal);
+    let end_arc = Arc::new(in_end.into(),end.into(),middle.radius,false,false,Normal);
+    shapes.push(Box::new(start_arc));
+    shapes.push(Box::new(end_arc));
+    return shapes;
+}
+fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
+    let radius = std_dist * CONSONANT_MODIFIER*0.5;
+    return vec![Box::new(Circle::new(middle.extend(-radius*1.1).into(),radius, Some(Normal)))];
+}
+fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
+    let radius = std_dist * CONSONANT_MODIFIER;
+    return vec![Box::new(Arc::new(start.into(),end.into(),radius,false,true,Normal))];
+}
+
+fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> Shapes {
+    let radius = std_dist * CONSONANT_MODIFIER*0.5;
+    return vec![Box::new(Circle::new(middle.into(),radius, Some(Normal)))];
 }
