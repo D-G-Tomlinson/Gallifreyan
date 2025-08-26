@@ -116,7 +116,7 @@ fn chars_to_letters(chars:Vec<char>) -> Result<Vec<Letter>,&'static str> {
             return Err("invalid letter found");
         }
     }
-    if singles.contains_key(&chars[i]) {
+    if i<chars.len() && singles.contains_key(&chars[i]) {
         result.push(singles[&chars[i]].clone());
     }
     return Ok(result);
