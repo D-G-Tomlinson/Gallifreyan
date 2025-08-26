@@ -22,20 +22,20 @@ impl TryFrom<String> for Svg {
         let word:Word = Word::try_from(input)?;
         let mut shapes =draw_word(word);
 
-        let diff = 1.1 * WORD_RADIUS;
-        
+        let length = 3.2 * WORD_RADIUS;
+
+        let half_length = length/2.0;
         for shape in &mut shapes {
-            shape.shove(diff,diff);
+            shape.shove(half_length,half_length);
         }
 
         let els:Vec<String> = shapes.into_iter().map(|shape| shape.to_element()).collect();
 
-        let length = 3.0*WORD_RADIUS;
 
         let mut start =
             format!("<svg
-  width=\"600mm\"
-  height=\"250mm\"
+  width=\"500mm\"
+  height=\"200mm\"
   viewBox=\"0 0 {} {}\"
   version=\"1.1\"
   xmlns=\"https://github.com/D-G-Tomlinson/Gallifreyan\"> ",length,length);
