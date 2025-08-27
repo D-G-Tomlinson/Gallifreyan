@@ -1,4 +1,4 @@
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
 use crate::shape::*;
 use crate::shape::Thickness::{Normal, Thick, Thin};
 use crate::tree::{Letter, Word, Consonant, Vowel, Marks, Vowels};
@@ -158,8 +158,7 @@ fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Option<Marks>,diac
     }
     if let Some(m) = marks {
         let relative_pos = get_big_arc_mark_pos(centre,in_start,in_end);
-        println!("Relative pos: {:?}", relative_pos);
-        shapes.append(&mut add_marks(m,centre,relative_pos,avoid_centre,std_dist))
+        shapes.append(&mut add_marks(m,centre.into(),relative_pos,avoid_centre,std_dist))
 
     }
     return shapes;
@@ -169,7 +168,6 @@ fn get_big_arc_mark_pos(centre:Polar,start:Cart,end:Cart) -> (Polar,Polar) {
     let centre:Cart = centre.into();
     let start = centre.to(&start);
     let end = centre.to(&end);
-    println!("start: {:?}, end: {:?}", start, end);
     return (start.into(),end.into());
 }
 
@@ -197,14 +195,21 @@ fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Opt
     let centre = middle.extend(-radius*1.1).into();
     let mut shapes:Shapes =  vec![Box::new(Circle::new(centre,radius, Some(Normal)))];
 
+    let avoid_centre:bool;
     if let Some(v) = diacritic {
         let outer = middle.extend(std_dist*VOWEL_MODIFIER*1.1);
         let middle = middle.extend(-radius*1.1);
         let inner = middle.extend(-radius);
         let v_pos = (inner,middle,outer);
         shapes.append(&mut draw_vowel(&v,v_pos,std_dist));
+        avoid_centre = v.v.centre()
+    }else {
+        avoid_centre = false;
     }
-
+    if let Some(m) = marks {
+        let relative_pos = (Polar::new(radius,0.75*PI),Polar::new(radius,0.25*PI));
+        shapes.append(&mut add_marks(m,centre,relative_pos,avoid_centre,std_dist));
+    }
     return shapes;
 }
 fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
@@ -237,7 +242,7 @@ fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option
 
     return shapes;
 }
-fn add_marks(marks:&Marks,centre:Polar,(start,end):(Polar,Polar),avoid_centre:bool,std_dist:f64) -> Shapes {//centre co-ord is wrt the word's centre, start and end are wrt centre
+fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:bool,std_dist:f64) -> Shapes {//centre co-ord is wrt the word's centre, start and end are wrt centre
     let (num,is_line):(i32,bool) = match marks {
         Marks::Line(n) => (*n,true),
         Marks::Dot(n) => (*n,false),
@@ -247,8 +252,11 @@ fn add_marks(marks:&Marks,centre:Polar,(start,end):(Polar,Polar),avoid_centre:bo
     } else {
         num as f64+ 1f64
     };
-    let diff = (2.0*PI + start.theta -end.theta)/(diff_num);
-    let centre:Cart = centre.into();
+    let diff = (end.theta - start.theta).rem_euclid(TAU);
+    let diff = TAU-diff;
+    let diff = diff/diff_num;
+
+
     let mut ppos = start;
     let mut shapes:Shapes = Vec::new();
     let mut cpos:Cart;
@@ -259,7 +267,7 @@ fn add_marks(marks:&Marks,centre:Polar,(start,end):(Polar,Polar),avoid_centre:bo
         shapes.push(if is_line {
             let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER*0.3).into();
             end.shove(centre.x,centre.y);
-            Box::new(Line::new(cpos,end,Normal))
+            Box::new(Line::new(cpos,end,Thick))
         } else {
             Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,None))
         });
