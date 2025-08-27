@@ -128,7 +128,7 @@ fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),
 
 
 fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
-    let diff = (end.theta - start.theta)/4.0;
+    let diff = (end.theta - start.theta).rem_euclid(TAU)/4.0;
     let in_start:Cart = start.rotate(diff).into();
     let in_end:Cart = end.rotate(-diff).into();
     let std_dist = in_start.distance(&in_end);
