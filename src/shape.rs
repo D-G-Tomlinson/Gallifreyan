@@ -1,6 +1,7 @@
 use std::convert::From;
 use std::boxed::Box;
 use std::f64::consts::PI;
+use std::f64::consts::TAU;
 use wasm_bindgen::link_to;
 use crate::tree::Word;
 use crate::tree::Letter;
@@ -38,7 +39,7 @@ pub struct Polar {
 }
 impl Polar {
     pub fn new(radius:f64, theta:f64) -> Self {
-        let theta = theta.rem_euclid(2.0*PI);
+        let theta = theta.rem_euclid(TAU);
         Self { radius, theta }
     }
     pub fn rotate(&self, dt:f64) -> Self {
@@ -48,6 +49,16 @@ impl Polar {
     pub fn extend(&self, dr:f64) -> Self {
         Self::new(self.radius+dr, self.theta)
     }
+    pub fn mult(&self, other:&Self) -> Self {
+        let radius = self.radius * other.radius;
+        let theta = self.theta + other.theta;
+        Self::new(radius, theta)
+    }
+    pub fn divide(&self, other:&Self) -> Self {
+        let radius = self.radius / other.radius;
+        let theta = self.theta - other.theta;
+        Self::new(radius, theta)
+    }
 }
 #[derive(Debug,Clone,Copy)]
 pub struct Cart {
@@ -55,6 +66,9 @@ pub struct Cart {
     pub y:f64,
 }
 impl Cart {
+    pub fn new(x:f64, y:f64) -> Self {
+        Self { x, y }
+    }
     pub fn shove(&mut self,dx:f64,dy:f64) {
         self.x+=dx;
         self.y+=dy;
@@ -78,7 +92,7 @@ impl From<Polar> for Cart {
     fn from(polar: Polar) -> Self {
         let x = polar.radius * polar.theta.cos();
         let y = -polar.radius * polar.theta.sin();
-        return Self {x, y,};
+        return Self { x, y }
     }
 }
 
@@ -88,11 +102,7 @@ impl From<Cart> for Polar {
         let y = -cart.y;
         let radius = (x*x + y*y).sqrt();
         let theta:f64;
-        if y == 0.0 {
-            theta = 0.0;
-        } else {
-            theta = (x/y).atan();
-        }
+            theta = (y/x).atan();
         let new_theta:f64;
         if x < 0.0 {
             if theta <= 0.0 {

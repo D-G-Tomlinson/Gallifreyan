@@ -1,3 +1,4 @@
+use std::f64::consts::PI;
 use std::io;
 mod conversion;
 mod tree;
@@ -9,7 +10,25 @@ use conversion::get_image;
 use std::fs::File;
 use std::io::prelude::*;
 
+use shape::{Cart,Polar};
+
+fn test() {
+    let tests = vec![(72, -56), (-57, 46), (-16, 23), (44, -26), (-61, 84), (-17, -79), (81, 2), (-5, 15), (86, 96), (-98, 75),
+                     (3,-4),(-3,-4),(-3,4),(3,4),
+                     (1,0),(0,-1),(-1,0),(0,1)];
+    for test in tests {
+        let (x,y) = test;
+        let mid = Polar::from(Cart::new(x as f64,y as f64));
+        let result = Cart::from(mid);
+        let result:(i32,i32) = (result.x.round() as i32,result.y.round() as i32);
+        let mid = mid.theta*180f64/PI;
+        let good = if  test == result{"PASS"} else {"FAILED"};
+        println!("{:?}->{:?}°->{:?}: {}",test,mid, result,good);
+    }
+}
+
 fn main() {
+    //return test();
         println!("Enter text: ");
 		let mut input=String::new();
         io::stdin()
