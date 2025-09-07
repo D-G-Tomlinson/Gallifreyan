@@ -118,9 +118,9 @@ fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),
 
     let mut new_shapes:Shapes= match consonant.arc {
         Big => get_big_arc((start,middle,end),&consonant.marks,&consonant.diacritic),
-        Above => get_above_arc((start,middle,end),std_dist,&consonant.marks,&consonant.diacritic),
+        Above => get_above_arc(middle,std_dist,&consonant.marks,&consonant.diacritic),
         Small =>  get_small_arc((start,middle,end),std_dist,&consonant.marks,&consonant.diacritic),
-        On => get_on_arc(middle,std_dist,&consonant.marks,&consonant.diacritic)
+        On => get_on_arc((start,middle,end),std_dist,&consonant.marks,&consonant.diacritic)
     };
     shapes.append(&mut new_shapes);
     return shapes;
@@ -190,7 +190,7 @@ fn get_centre_radius(r1:f64,r2:f64,alpha:f64,inner:bool) -> f64 {
     let result =  r2 * ep.sin()/shal;
     return result;
 }
-fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
+fn get_above_arc(middle:Polar,std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER*0.5;
     let centre = middle.extend(-radius*1.1).into();
     let mut shapes:Shapes =  vec![Box::new(Circle::new(centre,radius, Some(Normal)))];
@@ -208,7 +208,6 @@ fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Opt
     }
     if let Some(m) = marks {
         let start = Polar::new(radius,middle.theta);
-
         let relative_pos = (start.rotate(7f64*TAU/8f64),start.rotate(TAU/8f64));
         shapes.append(&mut add_marks(m,centre,relative_pos,avoid_centre,std_dist*0.75));
     }
@@ -239,17 +238,27 @@ fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Opt
     return shapes;
 }
 
-fn get_on_arc(middle:Polar,std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
+fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER*0.5;
     let mut shapes:Shapes = vec![Box::new(Circle::new(middle.into(),radius, Some(Normal)))];
 
+    let avoid_centre:bool;
     if let Some(v) = diacritic {
         let middle = middle;
         let inner = middle.extend(-radius);
         let outer = middle.extend(radius/2.0);
         shapes.append(&mut draw_vowel(v,(inner,middle,outer),std_dist));
+        avoid_centre = v.v.centre();
+    } else {
+        avoid_centre = false;
     }
-
+    if let Some(m) = marks {
+        let r1 = middle.radius;
+        let r2 = radius;
+        let diff:f64 = (1f64- r2*r2/(2.0*r1*r1)).acos();
+        let relative_pos = recenter_mark_pos(middle, middle.rotate(-diff).into(), middle.rotate(diff).into());
+        shapes.append(&mut add_marks(m,middle.into(),relative_pos,avoid_centre,std_dist))
+    }
     return shapes;
 }
 const SHOW_ENDS:bool = false;
