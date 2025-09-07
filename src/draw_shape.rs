@@ -120,7 +120,7 @@ fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),
         Big => get_big_arc((start,middle,end),&consonant.marks,&consonant.diacritic),
         Above => get_above_arc((start,middle,end),std_dist,&consonant.marks,&consonant.diacritic),
         Small =>  get_small_arc((start,middle,end),std_dist,&consonant.marks,&consonant.diacritic),
-        On => get_on_arc((start,middle,end),std_dist,&consonant.marks,&consonant.diacritic)
+        On => get_on_arc(middle,std_dist,&consonant.marks,&consonant.diacritic)
     };
     shapes.append(&mut new_shapes);
     return shapes;
@@ -208,8 +208,10 @@ fn get_above_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Opt
         avoid_centre = false;
     }
     if let Some(m) = marks {
-        let relative_pos = (Polar::new(radius,0.75*PI),Polar::new(radius,0.25*PI));
-        shapes.append(&mut add_marks(m,centre,relative_pos,avoid_centre,std_dist));
+        let start = Polar::new(radius,middle.theta);
+
+        let relative_pos = (start.rotate(7f64*TAU/8f64),start.rotate(TAU/8f64));
+        shapes.append(&mut add_marks(m,centre,relative_pos,avoid_centre,std_dist*0.75));
     }
     return shapes;
 }
@@ -230,7 +232,7 @@ fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Opt
     return shapes;
 }
 
-fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
+fn get_on_arc(middle:Polar,std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER*0.5;
     let mut shapes:Shapes = vec![Box::new(Circle::new(middle.into(),radius, Some(Normal)))];
 
@@ -243,6 +245,7 @@ fn get_on_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option
 
     return shapes;
 }
+const SHOW_ENDS:bool = false;
 fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:bool,std_dist:f64) -> Shapes {//centre co-ord is wrt the word's centre, start and end are wrt centre
     let (num,is_line):(i32,bool) = match marks {
         Marks::Line(n) => (*n,true),
@@ -261,15 +264,17 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
     let mut ppos = start;
     let mut shapes:Shapes = Vec::new();
     let mut cpos:Cart;
-    cpos = ppos.into();
-    cpos.shove(centre.x,centre.y);
-    shapes.push(if is_line {
-        let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER*0.3).into();
-        end.shove(centre.x,centre.y);
-        Box::new(Line::new(cpos,end,Thick))
-    } else {
-        Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,Some(Thin)))
-    });
+    if SHOW_ENDS {
+        cpos = ppos.into();
+        cpos.shove(centre.x,centre.y);
+        shapes.push(if is_line {
+            let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER*0.3).into();
+            end.shove(centre.x,centre.y);
+            Box::new(Line::new(cpos,end,Thick))
+        } else {
+            Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,Some(Thin)))
+        });
+    }
     for _ in 0..num as i32 {
         ppos=ppos.rotate(-diff);
         cpos = ppos.into();
@@ -282,15 +287,17 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
             Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,None))
         });
     }
-    ppos=ppos.rotate(-diff);
-    cpos = ppos.into();
-    cpos.shove(centre.x,centre.y);
-    shapes.push(if is_line {
-        let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER*0.3).into();
-        end.shove(centre.x,centre.y);
-        Box::new(Line::new(cpos,end,Thick))
-    } else {
-        Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,Some(Thick)))
-    });
+    if SHOW_ENDS {
+        ppos = ppos.rotate(-diff);
+        cpos = ppos.into();
+        cpos.shove(centre.x, centre.y);
+        shapes.push(if is_line {
+            let mut end: Cart = ppos.extend(std_dist * CONSONANT_MODIFIER * 0.3).into();
+            end.shove(centre.x, centre.y);
+            Box::new(Line::new(cpos, end, Thick))
+        } else {
+            Box::new(Circle::new(cpos, std_dist * CONSONANT_MODIFIER*0.1,Some(Thick)))
+        });
+    }
     return shapes;
 }
