@@ -2,24 +2,10 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8" />
-    <title>David's Gallifreyan Translator</title>
-    
+    <title>David's Gallifreyan Translator</title>  
   </head>
   <body>
-	<script type="module">
-	  import init, { to_gallifreyan } from "./pkg/gallifreyan.js";
-	  init().then();
-
-	  function process_conversion() {
-		  var text = document.getElementById("input_text").value;
-		  var result = to_gallifreyan(text);
-		  console.log("result: "+result);
-		  var container = document.getElementById("svg_container");
-		  container.innerHTML = result;
-	  }
-	  console.log("load");
-	  document.getElementById("input_button").addEventListener("click",process_conversion,false);
-	</script>	
+	<script type="module" src="script.js"></script>	
 	<h1>Welcome to David's converter</h1>
 	<div>
 	  <label for="input_text">Input Text</label><br>
