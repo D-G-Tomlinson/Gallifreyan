@@ -17,6 +17,7 @@
 }
 svg {
 	border: 5px dashed purple;
+	border-radius:5vmin;
 	height: 95vmin;
 	width: 95vmin;
 }
