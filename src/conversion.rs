@@ -1,5 +1,6 @@
 
 use std::convert::TryFrom;
+use std::f64::consts::TAU;
 use crate::tree::Word;
 use crate::draw_shape::WORD_RADIUS;
 use crate::shape::Cart;
@@ -60,6 +61,18 @@ fn get_words(input:Vec<char>) -> Vec<WordTypes> {
     return words;
 }
 
+fn get_num_words(sentance:Vec<WordTypes>) -> u32 {
+    let mut num_words = 0;
+    for w in sentance {
+        if let Punctuation(_) = w {
+            ()
+        } else {
+            num_words += 1;
+        }
+    }
+    return num_words;
+}
+
 impl TryFrom<String> for Svg {
     type Error = &'static str;
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -71,6 +84,14 @@ impl TryFrom<String> for Svg {
         let input:Vec<char> = input.into_iter().collect();
 
         let words = get_words(input);
+        let num_words = get_num_words(words);
+        let diff = TAU/num_words as f64;
+        let max_word_radius = 1.6*WORD_RADIUS;
+        let inner_radius = match num_words {
+            0|1 => 0f64,
+            n => max_word_radius/(2.0*(1.0-diff.cos()))
+        };
+        let outer_radius = inner_radius+max_word_radius;
 
         let word:Word = Word::try_from(input)?;
 
@@ -78,7 +99,6 @@ impl TryFrom<String> for Svg {
         let centre = Cart::origin();
         let mut shapes =draw_word(word,centre);
 
-        let length = 3.2 * WORD_RADIUS;
 
         let half_length = Cart::new(length/2.0,length/2.0);
         shapes.iter_mut().for_each(|s| s.shove(half_length));
