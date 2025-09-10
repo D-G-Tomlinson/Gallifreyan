@@ -2,16 +2,13 @@ use std::convert::From;
 use std::boxed::Box;
 use std::f64::consts::PI;
 use std::f64::consts::TAU;
-use wasm_bindgen::link_to;
-use crate::tree::Word;
-use crate::tree::Letter;
 
-pub const WORD_RADIUS:f64 = 10.0;
+use crate::draw_shape::WORD_RADIUS;
 
 const FILL:&str="#000000";
 const STROKE:&str="#000000";
 pub trait Shape {
-    fn shove(&mut self, dx:f64,dy:f64);
+    fn shove(&mut self, diff:Cart);
     fn to_element(&self) -> String;
 }
 pub type Shapes = Vec<Box<dyn Shape>>;
@@ -69,9 +66,9 @@ impl Cart {
     pub fn new(x:f64, y:f64) -> Self {
         Self { x, y }
     }
-    pub fn shove(&mut self,dx:f64,dy:f64) {
-        self.x+=dx;
-        self.y+=dy;
+    pub fn shove(&mut self,diff:Cart) {
+        self.x+=diff.x;
+        self.y+=diff.y;
     }
     pub fn distance(&self, &other:&Self) -> f64 {
         let dx = self.x - other.x;
@@ -130,8 +127,8 @@ impl Circle {
 }
 
 impl Shape for Circle {
-    fn shove(&mut self, dx:f64,dy:f64) {
-        self.centre.shove(dx,dy);
+    fn shove(&mut self, diff:Cart) {
+        self.centre.shove(diff);
     }
     fn to_element(&self) -> String {
         let (opacity,width) = match &self.thickness {
@@ -165,9 +162,9 @@ impl Arc {
 }
 
 impl Shape for Arc {
-    fn shove(&mut self, dx:f64,dy:f64) {
-        self.start.shove(dx,dy);
-        self.end.shove(dx,dy);
+    fn shove(&mut self, diff:Cart) {
+        self.start.shove(diff);
+        self.end.shove(diff);
     }
     fn to_element(&self) -> String {
         let width = self.thickness.val();
@@ -205,9 +202,9 @@ impl Line {
     }
 }
 impl Shape for Line {
-    fn shove(&mut self, dx:f64,dy:f64) {
-        self.start.shove(dx,dy);
-        self.end.shove(dx,dy);
+    fn shove(&mut self, diff:Cart) {
+        self.start.shove(diff);
+        self.end.shove(diff);
     }
     fn to_element(&self) -> String {
         let width = self.thickness.val();
