@@ -1,0 +1,23 @@
+#input_text {
+	width: 20vw;
+	height: 20vh;
+	resize: none;
+}
+#svg_container{
+	position: absolute;
+	top: 0;
+	right:0;
+
+	height: 100vh;
+	width: 80vw;
+
+	display:flex;
+	align-items:center;
+	justify-content:center;
+}
+svg {
+	border: 5px dashed purple;
+	border-radius:5vmin;
+	height: 95vmin;
+	width: 95vmin;
+}

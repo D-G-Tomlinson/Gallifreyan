@@ -87,8 +87,6 @@ impl TryFrom<String> for Svg {
 
         let mut start =
             format!("<svg
-  width=\"500mm\"
-  height=\"200mm\"
   viewBox=\"0 0 {} {}\"
   version=\"1.1\"
   xmlns=\"https://github.com/D-G-Tomlinson/Gallifreyan\"> ",length,length);

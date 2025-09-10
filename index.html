@@ -2,16 +2,17 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8" />
-    <title>hello-wasm example</title>
+    <title>David's Gallifreyan Translator</title>
+	<script type="module" src="script.js"></script>
+	<link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <script type="module">
-      import init, { greet } from "./pkg/gallifreyan.js";
-
-      init().then(() => {
-        greet("WebAssembly");
-      });
-    </script>
 	<h1>Welcome to David's converter</h1>
+	<div>
+	  <label for="input_text">Input Text</label><br>
+	  <textarea id="input_text" name="input_text"></textarea><br>
+	  <button id="input_button" value="Convert" style="width: 200px; height:50px">Convert!</button>
+	</div>
+	<div id="svg_container"></div>
   </body>
 </html>
