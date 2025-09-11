@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use std::f64::consts::TAU;
 use crate::tree::Word;
 use crate::draw_shape::WORD_RADIUS;
-use crate::shape::Cart;
+use crate::shape::{Cart, Polar, Shapes};
 use crate::draw_shape::draw_word;
 
 pub struct Svg(String);
@@ -58,12 +58,15 @@ fn get_words(input:Vec<char>) -> Vec<WordTypes> {
             }//good enough for now, will fix later for numbers and punctuation.
         }
     }
+    if let Some(cw) = current_word {
+        words.push(cw);
+    }
     return words;
 }
 
-fn get_num_words(sentance:Vec<WordTypes>) -> u32 {
+fn get_num_words(sentence:&Vec<WordTypes>) -> u32 {
     let mut num_words = 0;
-    for w in sentance {
+    for w in sentence {
         if let Punctuation(_) = w {
             ()
         } else {
@@ -84,21 +87,34 @@ impl TryFrom<String> for Svg {
         let input:Vec<char> = input.into_iter().collect();
 
         let words = get_words(input);
-        let num_words = get_num_words(words);
+        let num_words = get_num_words(&words);
+
+        println!("Number of words: {}", num_words);
+
         let diff = TAU/num_words as f64;
         let max_word_radius = 1.6*WORD_RADIUS;
         let inner_radius = match num_words {
             0|1 => 0f64,
-            n => max_word_radius/(2.0*(1.0-diff.cos()))
+            2 => max_word_radius,
+            n => max_word_radius/(1.0-diff.cos())
         };
         let outer_radius = inner_radius+max_word_radius;
+        let length = outer_radius * 1.1 * 2.0;
 
-        let word:Word = Word::try_from(input)?;
+        let mut pos = Polar::new(inner_radius, -TAU/4.0);
 
-        //need pos w.r.t sentance circle, so origin for now
-        let centre = Cart::origin();
-        let mut shapes =draw_word(word,centre);
+        let mut shapes:Shapes = Vec::new();
 
+        for word in &words {
+            if let PlainWord(word) = word {
+                let word = Word::try_from(word.clone())?;
+                let cart_pos:Cart = Cart::from(pos);
+                let mut these_shapes = draw_word(word,cart_pos);
+                these_shapes.iter_mut().for_each(|shape| shape.shove(cart_pos));
+                shapes.append(&mut these_shapes);
+                pos = pos.rotate(diff);
+            }
+        }
 
         let half_length = Cart::new(length/2.0,length/2.0);
         shapes.iter_mut().for_each(|s| s.shove(half_length));

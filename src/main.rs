@@ -44,9 +44,11 @@ fn main() {
   </head>
   <body>
 	<h1>Welcome to David's circle</h1>
+    <div style=\"width: 500px; height: 500px\">
 ").unwrap();
     file.write_all(output.as_bytes()).unwrap();
     file.write_all(b"
+    </div>
   </body>
 </html>
 ").unwrap();
