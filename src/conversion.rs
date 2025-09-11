@@ -132,7 +132,7 @@ impl TryFrom<String> for Svg {
             format!("<svg
   viewBox=\"0 0 {} {}\"
   version=\"1.1\"
-  xmlns=\"https://github.com/D-G-Tomlinson/Gallifreyan\"> ",length,length);
+  xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"> ",length,length);
 
         for el in &els {
             start.push_str(&el);
