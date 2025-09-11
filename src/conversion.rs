@@ -82,7 +82,7 @@ impl TryFrom<String> for Svg {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let input = value.trim().to_lowercase().chars().collect::<Vec<char>>();
         if input.is_empty() {
-            return Ok(Svg(value));
+            return Ok(Svg("<svg viewBox=\"0 0 10 10\" version=\"1.1\" xmlns=\"https://github.com/D-G-Tomlinson/Gallifreyan\"></svg>".to_string()));
         }
 
         let input:Vec<char> = input.into_iter().collect();
