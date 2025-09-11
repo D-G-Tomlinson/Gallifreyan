@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use std::f64::consts::TAU;
 use crate::tree::Word;
 use crate::draw_shape::WORD_RADIUS;
-use crate::shape::{Cart, Polar, Shapes};
+use crate::shape::{Cart, Circle, Polar, Shapes};
 use crate::draw_shape::draw_word;
 
 pub struct Svg(String);
@@ -19,6 +19,7 @@ enum WordTypes {
     NumberDec(Vec<char>),
 }
 use crate::conversion::WordTypes::*;
+use crate::shape::Thickness::*;
 
 fn get_words(input:Vec<char>) -> Vec<WordTypes> {
     let mut words:Vec<WordTypes> = Vec::new();
@@ -96,7 +97,7 @@ impl TryFrom<String> for Svg {
         let inner_radius = match num_words {
             0|1 => 0f64,
             2 => max_word_radius,
-            n => max_word_radius/(1.0-diff.cos())
+            n => (2.0*max_word_radius*max_word_radius/(1.0-diff.cos())).sqrt()
         };
         let outer_radius = inner_radius+max_word_radius;
         let length = outer_radius * 1.1 * 2.0;
@@ -104,6 +105,12 @@ impl TryFrom<String> for Svg {
         let mut pos = Polar::new(inner_radius, -TAU/4.0);
 
         let mut shapes:Shapes = Vec::new();
+
+        let sentence_ring = Circle::new(Cart::origin(), outer_radius,Some(Thick));
+        let punctuation_ring = Circle::new(Cart::origin(), outer_radius-2.0*Thick.val(),Some(Thin));
+
+        shapes.push(Box::new(sentence_ring));
+        shapes.push(Box::new(punctuation_ring));
 
         for word in &words {
             if let PlainWord(word) = word {
