@@ -116,6 +116,24 @@ fn bunch_numbers(input:&Vec<InProgress>) -> Vec<InProgress>{
             n => result.push(n.clone()),
         }
     }
+    // now need to handle decimal place dot
+    for i in (1..result.len()-1).rev() {
+        if let Dot = result.get_mut(i).unwrap() {
+            let next = clone_inner(result.get(i+1));
+            if let Some(Number(w2)) = next {
+                if let Some(prev) = result.get_mut(i-1) {
+                    if let NumberDec(mut prev_vec) = prev.clone() {
+                    prev_vec.push('.');
+                        let mut next_val = w2.clone();
+                        prev_vec.append(&mut next_val);
+                        result.remove(i);
+                        result.remove(i);
+                        result[i-1] = NumberDec(prev_vec.clone());
+                    }
+                }
+            }
+        }
+    }
     return result;
 }
 
