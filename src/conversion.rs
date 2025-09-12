@@ -11,64 +11,123 @@ impl Svg {
     pub fn svg(self) -> String { self.0 }
 }
 
+use crate::shape::Thickness::*;
+
 #[derive(Debug,Clone)]
-enum WordTypes {
+enum InProgress {
     PlainWord(Vec<char>),
     Punctuation(Vec<char>),
     Number(Vec<char>),
     NumberDec(Vec<char>),
+    RawLetter(char),
+    RawDigit(char),
+    Space,
+    Dot,
+    QMark,
+    ExMark,
+    DQuote,
+    SQuote,
+    Dash,
+    Comma,
+    SColon,
+    Colon
 }
-use crate::conversion::WordTypes::*;
-use crate::shape::Thickness::*;
 
-fn get_words(input:Vec<char>) -> Vec<WordTypes> {
-    let mut words:Vec<WordTypes> = Vec::new();
-    let mut current_word = None;
-    for i in 0..input.len() {
-        let c = &input[i];
-        match &c {
-            'a'..'z' => {
-                if let Some(PlainWord(ref mut word)) = current_word {
-                    word.push(*c);
-                } else {
-                    if let Some(cw) = current_word {
-                        words.push(cw);
-                    }
-                    current_word = Some(PlainWord(vec![*c]));
-                }
-            }
-            ' ' => {
-                if let Some(PlainWord(ref word)) = current_word {
-                    words.push(PlainWord(word.clone()));
-                    current_word = None;
-                } else if let Some(Number(ref word)) = current_word {
-                    words.push(Number(word.clone()));
-                    current_word = None;
-                } else if let Some(NumberDec(ref word)) = current_word {
-                    words.push(NumberDec(word.clone()));
-                    current_word = None;
-                }
-            },
-            // other punctuation goes here later
-            _ => {
-                if let Some(Punctuation(ref mut ps)) = current_word {
-                    ps.push(*c);
-                } else {
-                    words.push(Punctuation(vec![*c]));
-                }
-            }//good enough for now, will fix later for numbers and punctuation.
+use crate::conversion::InProgress::*;
+impl TryFrom<char> for InProgress {
+    type Error = String;
+    fn try_from(c: char) -> Result<Self, Self::Error> {
+        match c {
+            'a'..='z' => Ok(RawLetter(c)),
+            '0'..='9' => Ok(RawDigit(c)),
+            ' ' => Ok(Space),
+            '.' => Ok(Dot),
+            '?' => Ok(QMark),
+            '!' => Ok(ExMark),
+            '"' => Ok(DQuote),
+            '\'' => Ok(SQuote),
+            '-' => Ok(Dash),
+            ',' => Ok(Comma),
+            ';' => Ok(SColon),
+            ':' => Ok(Colon),
+            _ => Err(format!("Invalid character '{}'", c)),
         }
     }
-    if let Some(cw) = current_word {
-        words.push(cw);
-    }
-    return words;
 }
 
+fn get_words(input:Vec<char>) -> Result<Vec<WordTypes>,String> {
+    let mut in_prog:Vec<InProgress> = Vec::new();
+    for c in input {
+        in_prog.push(InProgress::try_from(c)?);
+    }
+    in_prog = bunch_chars(&in_prog);
+
+    return Err(format!("not implemented"));
+}
+fn clone_inner(input:Option<&InProgress>) -> Option<InProgress> {
+    match input {
+        None => None,
+        Some(p) => Some(p.clone())
+    }
+}
+fn bunch_chars(input:&Vec<InProgress>) -> Vec<InProgress>{
+    let mut result:Vec<InProgress> = Vec::new();
+    for i in 0..input.len(){
+        match &input[i] {
+            RawLetter(c) => {
+                if let Some(PlainWord(w)) = result.last_mut() {
+                    w.push(*c);
+                } else {
+                    result.push(PlainWord(vec![*c]));
+                }
+            }
+            n => result.push(n.clone()),
+        }
+    }
+    // now need to handle single quotes
+    for i in (1..result.len()-1).rev() {
+        if let Dash = result.get_mut(i).unwrap() {
+            let next = clone_inner(result.get(i+1));
+            if let Some(PlainWord(w2)) = next {
+                if let Some(PlainWord(prev)) = result.get_mut(i-1) {
+                    prev.push('\'');
+                    let mut next_val = w2.clone();
+                    prev.append(&mut next_val);
+                    result.remove(i);
+                    result.remove(i);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+fn bunch_numbers(input:&Vec<InProgress>) -> Vec<InProgress>{
+    let mut result:Vec<InProgress> = Vec::new();
+    for i in 0..input.len(){
+        match &input[i] {
+            RawDigit(d) => {
+                if let Some(Number(w)) = result.last_mut() {
+                    w.push(*d);
+                } else {
+                    result.push(Number(vec![*d]));
+                }
+            }
+            n => result.push(n.clone()),
+        }
+    }
+    return result;
+}
+
+enum WordTypes {
+    PlainWord(Vec<char>),
+    Punctuation(Vec<char>),
+    Number(Vec<char>),
+}
 fn get_num_words(sentence:&Vec<WordTypes>) -> u32 {
     let mut num_words = 0;
     for w in sentence {
-        if let Punctuation(_) = w {
+        if let WordTypes::Punctuation(_) = w {
             ()
         } else {
             num_words += 1;
@@ -78,7 +137,7 @@ fn get_num_words(sentence:&Vec<WordTypes>) -> u32 {
 }
 
 impl TryFrom<String> for Svg {
-    type Error = &'static str;
+    type Error = String;
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let input = value.trim().to_lowercase().chars().collect::<Vec<char>>();
         if input.is_empty() {
@@ -87,7 +146,10 @@ impl TryFrom<String> for Svg {
 
         let input:Vec<char> = input.into_iter().collect();
 
-        let words = get_words(input);
+        let words = match get_words(input) {
+            Ok(w) => w,
+            Err(e) => return Err(e)
+        };
         let num_words = get_num_words(&words);
 
         println!("Number of words: {}", num_words);
@@ -113,7 +175,7 @@ impl TryFrom<String> for Svg {
         shapes.push(Box::new(punctuation_ring));
 
         for word in &words {
-            if let PlainWord(word) = word {
+            if let WordTypes::PlainWord(word) = word {
                 let word = Word::try_from(word.clone())?;
                 let cart_pos:Cart = Cart::from(pos);
                 let mut these_shapes = draw_word(word,cart_pos);
@@ -130,9 +192,9 @@ impl TryFrom<String> for Svg {
 
         let mut start =
             format!("<svg
-  viewBox=\"0 0 {} {}\"
+  viewBox=\"0 0 {length} {length}\"
   version=\"1.1\"
-  xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"> ",length,length);
+  xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"> ");
 
         for el in &els {
             start.push_str(&el);
