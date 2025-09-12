@@ -60,7 +60,7 @@ fn get_words(input:Vec<char>) -> Result<Vec<WordTypes>,String> {
     for c in input {
         in_prog.push(InProgress::try_from(c)?);
     }
-    in_prog = bunch_chars(&in_prog);
+    let in_prog = bunch_numbers(&bunch_chars(&in_prog));
 
     return Err(format!("not implemented"));
 }
@@ -112,17 +112,18 @@ fn bunch_numbers(input:&Vec<InProgress>) -> Vec<InProgress>{
                 } else {
                     result.push(Number(vec![*d]));
                 }
-            }
+            },
             n => result.push(n.clone()),
         }
     }
+
     // now need to handle decimal place dot
     for i in (1..result.len()-1).rev() {
         if let Dot = result.get_mut(i).unwrap() {
             let next = clone_inner(result.get(i+1));
             if let Some(Number(w2)) = next {
                 if let Some(prev) = result.get_mut(i-1) {
-                    if let NumberDec(mut prev_vec) = prev.clone() {
+                    if let Number(mut prev_vec) = prev.clone() {
                     prev_vec.push('.');
                         let mut next_val = w2.clone();
                         prev_vec.append(&mut next_val);
@@ -134,7 +135,34 @@ fn bunch_numbers(input:&Vec<InProgress>) -> Vec<InProgress>{
             }
         }
     }
-    return result;
+
+    for i in 0..input.len(){
+        match &input[i] {
+            Dash => {
+                if let Some(Number(w)) = input.get(i+1) {
+                    let mut num = vec!['-'];
+                    num.append(&mut w.clone());
+                    result.push(Number(num));
+                } else if let Some(NumberDec(w)) = input.get(i-1) {
+                    let mut num = vec!['-'];
+                    num.append(&mut w.clone());
+                    result.push(Number(num));
+                } else {
+                    result.push(Dash);
+                }
+            },
+            n => result.push(n.clone()),
+        }
+    }
+
+    let mut final_vals :Vec<InProgress> = Vec::new();
+    for i in result {
+        final_vals.push(match i {
+            NumberDec(d) => Number(d),
+            n => n
+        });
+    }
+    return final_vals;
 }
 
 enum WordTypes {
