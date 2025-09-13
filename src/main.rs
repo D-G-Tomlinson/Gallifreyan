@@ -36,7 +36,7 @@ fn main() {
             .read_line(&mut input)
             .expect("Failed to read line");
         let output=get_image(&input);
-        let mut file = File::create("svgtest/output.html").unwrap();
+        let mut file = File::create("output.html").unwrap();
         file.write_all(b"<!doctype html>
 <html lang=\"en-US\">
   <head>
