@@ -21,3 +21,21 @@ svg {
 	height: 95vmin;
 	width: 95vmin;
 }
+.anti_clockwise_number {
+	animation: rotate 3s infinite;
+	transform-origin: 50% 50%;
+	transform-box: fill-box;
+	animation-direction: reverse;
+}
+.clockwise_number {
+	animation: rotate 3s infinite;
+	transform-origin: 50% 50%;
+	transform-box: fill-box;
+}
+
+@keyframes rotate{
+    from{
+		transform: rotate(0deg);}to{
+		transform: rotate(360deg);
+    }
+}
