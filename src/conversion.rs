@@ -194,7 +194,6 @@ impl TryFrom<String> for Svg {
         let words = get_words(input.into_iter().collect())?;
         let num_words = get_num_words(&words);
 
-        println!("Number of words: {}", num_words);
         let (inner_radius ,outer_radius,diff) = get_inner_outer_diff(num_words);
 
         let mut pos = Polar::new(inner_radius, -TAU/4.0);

@@ -6,7 +6,6 @@ use crate::tree::Digit;
 
 impl Digit {
     fn to_shapes(&self, outer:f64,inner:f64) -> Shapes {
-        println!("Digit is {self:?}");
         let outer_ring_thickness = if self.follows_dot {Thick} else {Normal};
         let mut shapes:Shapes =vec![Box::new(Circle::new(Cart::origin(),outer,Some(outer_ring_thickness)))];
 
@@ -34,7 +33,6 @@ impl Digit {
 
 impl From<&Number> for Shapes {
     fn from(number:&Number) -> Self {
-        println!("Number is {number:?}");
         let mut shapes:Shapes = Shapes::new();
         let mut is_clockwise = false;
         let delta_rad = WORD_RADIUS/(number.digits.len() as f64 + 1f64);
