@@ -51,7 +51,7 @@ impl From<&Number> for Shapes {
                 (true,true) => Box::new(Circle::new(Cart::origin(),current_inner,None)),
                 (true,false) => {
                     let circle = Circle::new(Cart::origin(),current_inner,Some(Thick));
-                    let line = Line::new(Cart::new(0.0,current_inner),Cart::new(0.0,-current_inner),Normal);
+                    let line = Line::new(Cart::new(0.0,current_inner),Cart::new(0.0,-current_inner),Thick);
                     Box::new(RotatingSet::new(vec![Box::new(circle),Box::new(line)],is_clockwise))
                 },
                 (false,true) => Box::new(Circle::new(Cart::origin(),current_inner,Some(Normal))),
