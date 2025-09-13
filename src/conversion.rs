@@ -56,7 +56,7 @@ fn get_words(input:Vec<char>) -> Result<Vec<WordTypes>,String> {
                     if let Some(cw) = current_word {
                         words.push(cw);
                     }
-                    current_word = Some(Number(vec![*c]));
+                    current_word = Some(Punctuation(vec![SEnd(c.clone())]));
                 }
             },
             '-' => {
