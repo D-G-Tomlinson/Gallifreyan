@@ -1,6 +1,7 @@
 use crate::shape::{Polar, Shapes};
-use crate::tree::Word;
+use crate::tree::Number;
+use crate::tree::Digit;
 
-pub fn draw_number_word(word: &Word, pos:&Polar) -> Shapes {
+pub fn draw_number_word(word: &Number, pos:&Polar) -> Shapes {
     todo!()
 }

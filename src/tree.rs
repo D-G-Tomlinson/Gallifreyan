@@ -194,5 +194,49 @@ impl Word {
         return i;
     }
 }
-//can work on sentances later
 
+pub struct Digit {
+    has_circle: bool,
+    num_lines:u8,
+    follows_dot: bool,
+}
+
+impl Digit {
+    fn try_from(char:&char,follows_dot:bool) -> Result<Self, String> {
+        if !('0'..='9').contains(&char) {
+            return Err(format!("invalid digit {}", char));
+        }
+        let val = char.to_digit(10).unwrap() as u8;
+        let has_circle = val >= 5;
+        let num_lines = val % 5;
+        return Ok(Digit{has_circle,num_lines,follows_dot});
+    }
+}
+
+pub struct Number {
+    is_negative: bool,
+    is_whole:bool,
+    digits: Vec<Digit>,
+}
+impl TryFrom<Vec<char>> for Number {
+    type Error = String;
+    fn try_from(chars:Vec<char>) -> Result<Self, Self::Error> {
+        if chars.len() == 0 {
+            return Err("empty number".to_string());
+        }
+        let is_negative = chars[0] == '-';
+        let start = if is_negative {1} else {0};
+        let mut digits:Vec<Digit> = Vec::new();
+        let mut was_dot = false;
+        let mut is_whole = true;
+        for d in &chars[start..] {
+            if *d =='.' {
+                was_dot = true;
+                is_whole = false;
+            } else {
+                digits.push(Digit::try_from(d,was_dot)?);
+            }
+        }
+        Ok(Number{is_negative,is_whole, digits})
+    }
+}
