@@ -6,7 +6,6 @@ use crate::tree::Number;
 use crate::shape::WORD_RADIUS;
 use crate::shape::{Cart, Circle, Polar, Shapes};
 use crate::draw_word::draw_plain_word;
-use crate::draw_number::draw_number_word;
 pub struct Svg(String);
 impl Svg {
     pub fn svg(self) -> String { self.0 }
@@ -172,9 +171,9 @@ fn draw_word(word: &WordTypes, this:&Polar,last:&Polar,diff:f64) -> Result<(Shap
             Ok((these_shapes,this.rotate(diff)))
         },
         Number(word) => {
-            let num = Number::try_from(word.clone())?;
+            let num = &Number::try_from(word.clone())?;
             let cart_pos:Cart = Cart::from(this.clone());
-            let mut these_shapes = draw_number_word(&num, this);
+            let mut these_shapes:Shapes = num.into();
             these_shapes.iter_mut().for_each(|shape| shape.shove(cart_pos));
             Ok((these_shapes,this.rotate(diff)))
         },

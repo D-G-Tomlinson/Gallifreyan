@@ -195,10 +195,11 @@ impl Word {
     }
 }
 
+#[derive(Debug,Clone)]
 pub struct Digit {
-    has_circle: bool,
-    num_lines:u8,
-    follows_dot: bool,
+    pub has_circle: bool,
+    pub num_lines:u8,
+    pub follows_dot: bool,
 }
 
 impl Digit {
@@ -213,10 +214,11 @@ impl Digit {
     }
 }
 
+#[derive(Debug,Clone)]
 pub struct Number {
-    is_negative: bool,
-    is_whole:bool,
-    digits: Vec<Digit>,
+    pub is_positive: bool,
+    pub is_whole:bool,
+    pub digits: Vec<Digit>,
 }
 impl TryFrom<Vec<char>> for Number {
     type Error = String;
@@ -224,8 +226,8 @@ impl TryFrom<Vec<char>> for Number {
         if chars.len() == 0 {
             return Err("empty number".to_string());
         }
-        let is_negative = chars[0] == '-';
-        let start = if is_negative {1} else {0};
+        let is_positive = chars[0] != '-';
+        let start = if is_positive {1} else {0};
         let mut digits:Vec<Digit> = Vec::new();
         let mut was_dot = false;
         let mut is_whole = true;
@@ -237,6 +239,6 @@ impl TryFrom<Vec<char>> for Number {
                 digits.push(Digit::try_from(d,was_dot)?);
             }
         }
-        Ok(Number{is_negative,is_whole, digits})
+        Ok(Number{ is_positive,is_whole, digits})
     }
 }

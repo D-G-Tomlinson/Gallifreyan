@@ -114,6 +114,26 @@ impl From<Cart> for Polar {
     }
 }
 
+pub struct RotatingSet {
+    shapes: Vec<Box<dyn Shape>>,
+    is_clockwise: bool,
+}
+impl RotatingSet {
+    pub fn new(shapes: Vec<Box<dyn Shape>>, is_clockwise:bool) -> Self {
+        Self { shapes,is_clockwise }
+    }
+}
+impl Shape for RotatingSet {
+    fn shove(&mut self, diff:Cart) {
+        &self.shapes.iter_mut().for_each(|s| s.shove(diff));
+    }
+    fn to_element(&self) -> String {
+        let els = &self.shapes.iter().map(|s| s.to_element()).collect::<Vec<_>>().join("");
+        let direction = if self.is_clockwise {"clockwise"} else {"anti_clockwise"};
+        return format!("<g class=\"{direction}_number\">{els}</g>");
+    }
+}
+
 pub struct Circle {
     centre: Cart,
     radius:f64,
