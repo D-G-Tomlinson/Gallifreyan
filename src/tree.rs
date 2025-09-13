@@ -227,7 +227,7 @@ impl TryFrom<Vec<char>> for Number {
             return Err("empty number".to_string());
         }
         let is_positive = chars[0] != '-';
-        let start = if is_positive {1} else {0};
+        let start = if !is_positive {1} else {0};
         let mut digits:Vec<Digit> = Vec::new();
         let mut was_dot = false;
         let mut is_whole = true;

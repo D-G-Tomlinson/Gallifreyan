@@ -34,6 +34,7 @@ impl Digit {
 
 impl From<&Number> for Shapes {
     fn from(number:&Number) -> Self {
+        println!("Number is {number:?}");
         let mut shapes:Shapes = Shapes::new();
         let mut is_clockwise = false;
         let delta_rad = WORD_RADIUS/(number.digits.len() as f64 + 1f64);
@@ -66,4 +67,3 @@ impl From<&Number> for Shapes {
         return shapes;
     }
 }
-//            shapes.push(Box::new());
