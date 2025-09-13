@@ -14,20 +14,68 @@ impl Svg {
 #[derive(Debug,Clone)]
 enum WordTypes {
     PlainWord(Vec<char>),
-    Punctuation(Vec<char>),
+    Punctuation(Vec<PunctuationTypes>),
     Number(Vec<char>),
-    NumberDec(Vec<char>),
 }
+use crate::conversion::PunctuationTypes::*;
+#[derive(Debug,Clone)]
+enum PunctuationTypes {
+    NEnd(char),//not sentence ender
+    SEnd(char),//sentence ender
+}
+
 use crate::conversion::WordTypes::*;
 use crate::shape::Thickness::*;
 
-fn get_words(input:Vec<char>) -> Vec<WordTypes> {
+fn get_words(input:Vec<char>) -> Result<Vec<WordTypes>,String> {
     let mut words:Vec<WordTypes> = Vec::new();
     let mut current_word = None;
     for i in 0..input.len() {
         let c = &input[i];
         match &c {
-            'a'..'z' => {
+            '0'..='9' => {
+                if let Some(Number(ref mut word)) = current_word {
+                    word.push(*c);
+                } else {
+                    if let Some(cw) = current_word {
+                        words.push(cw);
+                    }
+                    current_word = Some(Number(vec![*c]));
+                }
+            },
+            '.' => {
+                if let Some(Number(ref mut word)) = current_word {
+                    if let Some(next) = input.get(i+1) {
+                        if ('0'..='9').contains(&next)  {
+                            word.push(*c);
+                        }
+                    }
+                } else if let Some(Punctuation(ref mut word)) = current_word {
+                    word.push(SEnd(c.clone()));
+                }  else {
+                    if let Some(cw) = current_word {
+                        words.push(cw);
+                    }
+                    current_word = Some(Number(vec![*c]));
+                }
+            },
+            '-' => {
+                if let Some(next) = input.get(i+1) && ('0'..='9').contains(&next) {
+                    if let Some(cw) = current_word {
+                        words.push(cw);
+                    }
+                    current_word = Some(Number(vec![*c]));
+                }
+                 else if let Some(Punctuation(ref mut word)) = current_word {
+                    word.push(NEnd(c.clone()));
+                }  else {
+                    if let Some(cw) = current_word {
+                        words.push(cw);
+                    }
+                    current_word = Some(Punctuation(vec![NEnd(c.clone())]));
+                }
+            },
+            'a'..='z' => {
                 if let Some(PlainWord(ref mut word)) = current_word {
                     word.push(*c);
                 } else {
@@ -36,33 +84,58 @@ fn get_words(input:Vec<char>) -> Vec<WordTypes> {
                     }
                     current_word = Some(PlainWord(vec![*c]));
                 }
-            }
+            },
+            '\'' => {
+                if let Some(PlainWord(ref mut word)) = current_word {
+                    if let Some(next) = input.get(i+1) && ('a'..='z').contains(&next) {
+                            word.push(*c);
+                    }
+                } else if let Some(Punctuation(ref mut word)) = current_word {
+                    word.push(NEnd(c.clone()));
+                } else {
+                    if let Some(cw) = current_word {
+                        words.push(cw);
+                    }
+                    current_word = Some(Punctuation(vec![NEnd(c.clone())]));
+                }
+            },
             ' ' => {
-                if let Some(PlainWord(ref word)) = current_word {
-                    words.push(PlainWord(word.clone()));
-                    current_word = None;
-                } else if let Some(Number(ref word)) = current_word {
-                    words.push(Number(word.clone()));
-                    current_word = None;
-                } else if let Some(NumberDec(ref word)) = current_word {
-                    words.push(NumberDec(word.clone()));
+                if let Some(Punctuation(_)) = current_word {
+                    ()
+                } else if let Some(ref cw) = current_word {
+                    words.push(cw.clone());
                     current_word = None;
                 }
             },
-            // other punctuation goes here later
-            _ => {
-                if let Some(Punctuation(ref mut ps)) = current_word {
-                    ps.push(*c);
+            //normal, non ending punctuation
+            '"'|','|';'|':' => {
+                if let Some(Punctuation(ref mut word)) = current_word {
+                    word.push(NEnd(c.clone()));
                 } else {
-                    words.push(Punctuation(vec![*c]));
+                    if let Some(cw) = current_word {
+                        words.push(cw);
+                    }
+                    current_word = Some(PlainWord(vec![*c]));
                 }
-            }//good enough for now, will fix later for numbers and punctuation.
+            },
+            //normal, ending punctuation
+            '?'|'!' => {
+                if let Some(Punctuation(ref mut word)) = current_word {
+                    word.push(SEnd(c.clone()));
+                } else {
+                    if let Some(cw) = current_word {
+                        words.push(cw);
+                    }
+                    current_word = Some(PlainWord(vec![*c]));
+                }
+            },
+            _ => return Err(format!("{} is not a valid letter", c)),
         }
     }
     if let Some(cw) = current_word {
         words.push(cw);
     }
-    return words;
+    return Ok(words);
 }
 
 fn get_num_words(sentence:&Vec<WordTypes>) -> u32 {
@@ -77,40 +150,38 @@ fn get_num_words(sentence:&Vec<WordTypes>) -> u32 {
     return num_words;
 }
 
+fn get_inner_outer_diff(num_words:u32) -> (f64,f64,f64) {
+    let diff = TAU/num_words as f64;
+    let max_word_radius = 1.6*WORD_RADIUS;
+    let inner_radius = match num_words {
+        0|1 => 0f64,
+        2 => max_word_radius,
+        n => (2.0*max_word_radius*max_word_radius/(1.0-diff.cos())).sqrt()
+    };
+    let outer_radius = inner_radius+max_word_radius;
+    return (inner_radius, outer_radius, diff);
+}
+
 impl TryFrom<String> for Svg {
-    type Error = &'static str;
+    type Error = String;
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let input = value.trim().to_lowercase().chars().collect::<Vec<char>>();
         if input.is_empty() {
             return Ok(Svg("<svg viewBox=\"0 0 10 10\" version=\"1.1\" xmlns=\"https://github.com/D-G-Tomlinson/Gallifreyan\"></svg>".to_string()));
         }
 
-        let input:Vec<char> = input.into_iter().collect();
-
-        let words = get_words(input);
+        let words = get_words(input.into_iter().collect())?;
         let num_words = get_num_words(&words);
 
         println!("Number of words: {}", num_words);
-
-        let diff = TAU/num_words as f64;
-        let max_word_radius = 1.6*WORD_RADIUS;
-        let inner_radius = match num_words {
-            0|1 => 0f64,
-            2 => max_word_radius,
-            n => (2.0*max_word_radius*max_word_radius/(1.0-diff.cos())).sqrt()
-        };
-        let outer_radius = inner_radius+max_word_radius;
-        let length = outer_radius * 1.1 * 2.0;
+        let (inner_radius ,outer_radius,diff) = get_inner_outer_diff(num_words);
 
         let mut pos = Polar::new(inner_radius, -TAU/4.0);
 
         let mut shapes:Shapes = Vec::new();
 
-        let sentence_ring = Circle::new(Cart::origin(), outer_radius,Some(Thick));
-        let punctuation_ring = Circle::new(Cart::origin(), outer_radius-2.0*Thick.val(),Some(Thin));
-
-        shapes.push(Box::new(sentence_ring));
-        shapes.push(Box::new(punctuation_ring));
+        shapes.push(Box::new(Circle::new(Cart::origin(), outer_radius,Some(Thick))));
+        shapes.push(Box::new(Circle::new(Cart::origin(), outer_radius-2.0*Thick.val(),Some(Thin))));
 
         for word in &words {
             if let PlainWord(word) = word {
@@ -122,7 +193,7 @@ impl TryFrom<String> for Svg {
                 pos = pos.rotate(diff);
             }
         }
-
+        let length = outer_radius * 1.1 * 2.0;
         let half_length = Cart::new(length/2.0,length/2.0);
         shapes.iter_mut().for_each(|s| s.shove(half_length));
         let els:Vec<String> = shapes.into_iter().map(|shape| shape.to_element()).collect();
@@ -130,14 +201,14 @@ impl TryFrom<String> for Svg {
 
         let mut start =
             format!("<svg
-  viewBox=\"0 0 {} {}\"
+  viewBox=\"0 0 {length} {length}\"
   version=\"1.1\"
-  xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"> ",length,length);
+  xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"> <g id=\"all_gall\">");
 
         for el in &els {
             start.push_str(&el);
         }
-        start.push_str("</svg>");
+        start.push_str("</g></svg>");
 
         let result = Svg(start);
         return Ok(result);
