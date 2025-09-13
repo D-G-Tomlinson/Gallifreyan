@@ -1,7 +1,8 @@
 mod tree;
 mod conversion;
 mod shape;
-mod draw_shape;
+mod draw_word;
+mod draw_number;
 
 use conversion::get_image;
 use wasm_bindgen::prelude::*;

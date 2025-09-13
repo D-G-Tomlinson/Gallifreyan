@@ -3,7 +3,8 @@ use std::io;
 mod conversion;
 mod tree;
 mod shape;
-mod draw_shape;
+mod draw_word;
+mod draw_number;
 
 use conversion::get_image;
 

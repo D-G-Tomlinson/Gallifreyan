@@ -3,7 +3,7 @@ use std::boxed::Box;
 use std::f64::consts::PI;
 use std::f64::consts::TAU;
 
-use crate::draw_shape::WORD_RADIUS;
+pub const WORD_RADIUS:f64 = 10.0;
 
 const FILL:&str="#000000";
 const STROKE:&str="#000000";

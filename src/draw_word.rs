@@ -7,7 +7,6 @@ use crate::tree::Arc::{Big,Small,Above,On};
 
 const VOWEL_MODIFIER:f64 = 0.1;
 const CONSONANT_MODIFIER:f64 = 0.6;
-pub const WORD_RADIUS:f64 = 10.0;
 
 fn one_letter_word(letter:&Letter) -> Shapes {
     let pi = std::f64::consts::PI;
@@ -28,7 +27,7 @@ fn one_letter_word(letter:&Letter) -> Shapes {
 
 }
 
-pub fn draw_word(word: Word,pos:Cart) -> Shapes {
+pub fn draw_plain_word(word: &Word, pos:&Polar) -> Shapes {
     let num_parts = word.get_num_things();
 
     if num_parts == 0 {
