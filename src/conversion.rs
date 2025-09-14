@@ -33,7 +33,7 @@ impl TryFrom<String> for Svg {
   viewBox=\"0 0 {length} {length}\"
   version=\"1.1\"
   xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"
-  id=\"generated_svg\"
+  id=\"generated_svg\">
     <g id=\"all_gall\">
 {els}
     </g>

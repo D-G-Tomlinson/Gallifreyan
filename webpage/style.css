@@ -3,6 +3,12 @@
 	height: 20vh;
 	resize: none;
 }
+#input_button {
+	width: 200px;
+	height:200px;
+	fill: #000000;
+	stroke: #000000;
+}
 #svg_container{
 	position: absolute;
 	top: 0;
@@ -20,6 +26,23 @@
 	border-radius:5vmin;
 	height: 95vmin;
 	width: 95vmin;
+}
+
+#generated_svg {
+	stroke: #000050;
+	fill: #000050;
+}
+.vowel {
+	stroke: #500050;
+	fill: #500050;
+}
+.plainword {
+	stroke: #005000;
+	fill: #005000;	
+}
+.number {
+	stroke: #873E35;
+	fill: #873E35;
 }
 .anti_clockwise_number {
 	animation: rotate 6s linear infinite;

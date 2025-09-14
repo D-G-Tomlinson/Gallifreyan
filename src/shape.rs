@@ -5,8 +5,8 @@ use std::f64::consts::TAU;
 
 pub const WORD_RADIUS:f64 = 10.0;
 
-const FILL:&str="#000000";
-const STROKE:&str="#000000";
+const FILL:&str="current";
+const STROKE:&str="current";
 pub trait Shape {
     fn shove(&mut self, diff:Cart);
     fn to_element(&self) -> String;
@@ -177,9 +177,7 @@ impl Shape for Circle {
             Some(t) => (0.0,t.val()),
             None => (1.0,0.0)
         };
-        return format!("<circle fill=\"{}\" stroke = \"{}\" cx=\"{}\" cy=\"{}\" r=\"{}\" stroke-width=\"{}\" fill-opacity=\"{}\" />",
-                       FILL,
-                       STROKE,
+        return format!("<circle  cx=\"{}\" cy=\"{}\" r=\"{}\" stroke-width=\"{}\" fill-opacity=\"{}\" />",
                        self.centre.x,
                        self.centre.y,
                        self.radius,
@@ -218,8 +216,7 @@ impl Shape for Arc {
             true => 1,
             false => 0
         };
-        return format!("<path fill-opacity=\"0\" stroke=\"{}\" stroke-width=\"{}\" d=\"M {} {} A {} {} 0 {} {} {} {}\" />",
-            STROKE,
+        return format!("<path fill-opacity=\"0\" stroke-width=\"{}\" d=\"M {} {} A {} {} 0 {} {} {} {}\" />",
             self.thickness.val(),
             self.start.x,
             self.start.y,
@@ -250,8 +247,7 @@ impl Shape for Line {
     }
     fn to_element(&self) -> String {
         let width = self.thickness.val();
-        return format!("<path stroke=\"{}\" stroke-width=\"{}\" d=\"M {} {} L {} {}\" />",
-                       STROKE,
+        return format!("<path stroke-width=\"{}\" d=\"M {} {} L {} {}\" />",
                        self.thickness.val(),
                        self.start.x,
                        self.start.y,
