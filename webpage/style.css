@@ -32,6 +32,7 @@
 	stroke: #000050;
 	fill: #000050;
 }
+/*
 .vowel {
 	stroke: #500050;
 	fill: #500050;
@@ -44,6 +45,7 @@
 	stroke: #873E35;
 	fill: #873E35;
 }
+*/
 .anti_clockwise_number {
 	animation: rotate 6s linear infinite;
 	transform-origin: 50% 50%;

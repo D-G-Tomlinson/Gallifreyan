@@ -120,7 +120,7 @@ pub struct ShapeSet {
     class: String,
 }
 const WORD_PULSE:bool = false;
-const SENTENCE_PULSE:bool = true;
+const SENTENCE_PULSE:bool = false;
 
 impl ShapeSet {
     pub fn new_rotating(shapes: Shapes, is_clockwise:bool) -> Self {
