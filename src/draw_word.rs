@@ -68,14 +68,14 @@ fn draw_letter(letter:&Letter, (start,middle,end):(Polar,Polar,Polar)) -> BShape
 
 fn draw_loose_vowel(vowel:&Vowel, (start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> BShape {
     let mut shapes = Shapes::new();
-    let connecting_arc = Box::new(crate::shape::Arc::new(start.into(), end.into(), WORD_RADIUS, false, false, crate::shape::Thickness::Normal));
+    let connecting_arc = Box::new(crate::shape::Arc::new(start.into(), end.into(), WORD_RADIUS, false, false, Normal));
     shapes.push(connecting_arc);
 
     let inner = middle.extend(-std_dist*VOWEL_MODIFIER*1.01);
     let outer = middle.extend(std_dist*VOWEL_MODIFIER*1.01);
     shapes.push(draw_vowel(vowel,(inner,middle,outer),std_dist));
 
-    return Box::new(ShapeSet::new(shapes,"letter vowel"));
+    return Box::new(ShapeSet::new(shapes,"letter"));
 }
 
 fn draw_vowel(vowel:&Vowel, (inner,middle,outer):(Polar,Polar,Polar),std_dist:f64) -> BShape {
