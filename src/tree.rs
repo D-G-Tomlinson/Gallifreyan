@@ -242,3 +242,150 @@ impl TryFrom<Vec<char>> for Number {
         Ok(Number{ is_positive,is_whole, digits})
     }
 }
+#[derive(Debug,Clone)]
+pub enum WordTypes {
+    PlainWord(Vec<char>),
+    Punctuation(Vec<PunctuationTypes>),
+    Number(Vec<char>),
+}
+use crate::tree::PunctuationTypes::*;
+#[derive(Debug,Clone)]
+pub enum PunctuationTypes {
+    NEnd(char),//not sentence ender
+    SEnd(char),//sentence ender
+}
+
+use crate::tree::WordTypes::*;
+
+
+#[derive(Debug,Clone)]
+pub struct Sentence {
+    pub words: Vec<WordTypes>
+}
+
+impl Sentence {
+    pub fn get_num_words(&self) -> u32 {
+        let mut num_words = 0;
+        for w in &self.words {
+            if let Punctuation(_) = w {
+                ()
+            } else {
+                num_words += 1;
+            }
+        }
+        return num_words;
+    }
+}
+impl TryFrom<Vec<char>> for Sentence {
+    type Error = String;
+    fn try_from(input:Vec<char>) -> Result<Sentence,String> {
+        let mut words:Vec<WordTypes> = Vec::new();
+        let mut current_word = None;
+        for i in 0..input.len() {
+            let c = &input[i];
+            match &c {
+                '0'..='9' => {
+                    if let Some(Number(ref mut word)) = current_word {
+                        word.push(*c);
+                    } else {
+                        if let Some(cw) = current_word {
+                            words.push(cw);
+                        }
+                        current_word = Some(Number(vec![*c]));
+                    }
+                },
+                '.' => {
+                    if let Some(Number(ref mut word)) = current_word {
+                        if let Some(next) = input.get(i+1) {
+                            if ('0'..='9').contains(&next)  {
+                                word.push(*c);
+                            }
+                        }
+                    } else if let Some(Punctuation(ref mut word)) = current_word {
+                        word.push(SEnd(c.clone()));
+                    }  else {
+                        if let Some(cw) = current_word {
+                            words.push(cw);
+                        }
+                        current_word = Some(Punctuation(vec![SEnd(c.clone())]));
+                    }
+                },
+                '-' => {
+                    if let Some(next) = input.get(i+1) && ('0'..='9').contains(&next) {
+                        if let Some(cw) = current_word {
+                            words.push(cw);
+                        }
+                        current_word = Some(Number(vec![*c]));
+                    }
+                    else if let Some(Punctuation(ref mut word)) = current_word {
+                        word.push(NEnd(c.clone()));
+                    }  else {
+                        if let Some(cw) = current_word {
+                            words.push(cw);
+                        }
+                        current_word = Some(Punctuation(vec![NEnd(c.clone())]));
+                    }
+                },
+                'a'..='z' => {
+                    if let Some(PlainWord(ref mut word)) = current_word {
+                        word.push(*c);
+                    } else {
+                        if let Some(cw) = current_word {
+                            words.push(cw);
+                        }
+                        current_word = Some(PlainWord(vec![*c]));
+                    }
+                },
+                '\'' => {
+                    if let Some(PlainWord(ref mut word)) = current_word {
+                        if let Some(next) = input.get(i+1) && ('a'..='z').contains(&next) {
+                            word.push(*c);
+                        }
+                    } else if let Some(Punctuation(ref mut word)) = current_word {
+                        word.push(NEnd(c.clone()));
+                    } else {
+                        if let Some(cw) = current_word {
+                            words.push(cw);
+                        }
+                        current_word = Some(Punctuation(vec![NEnd(c.clone())]));
+                    }
+                },
+                ' ' => {
+                    if let Some(Punctuation(_)) = current_word {
+                        ()
+                    } else if let Some(ref cw) = current_word {
+                        words.push(cw.clone());
+                        current_word = None;
+                    }
+                },
+                //normal, non ending punctuation
+                '"'|','|';'|':' => {
+                    if let Some(Punctuation(ref mut word)) = current_word {
+                        word.push(NEnd(c.clone()));
+                    } else {
+                        if let Some(cw) = current_word {
+                            words.push(cw);
+                        }
+                        current_word = Some(PlainWord(vec![*c]));
+                    }
+                },
+                //normal, ending punctuation
+                '?'|'!' => {
+                    if let Some(Punctuation(ref mut word)) = current_word {
+                        word.push(SEnd(c.clone()));
+                    } else {
+                        if let Some(cw) = current_word {
+                            words.push(cw);
+                        }
+                        current_word = Some(PlainWord(vec![*c]));
+                    }
+                },
+                _ => return Err(format!("{} is not a valid letter", c)),
+            }
+        }
+        if let Some(cw) = current_word {
+            words.push(cw);
+        }
+        return Ok(Self{words});
+    }
+}

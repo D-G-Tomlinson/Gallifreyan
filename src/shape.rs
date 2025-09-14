@@ -11,7 +11,8 @@ pub trait Shape {
     fn shove(&mut self, diff:Cart);
     fn to_element(&self) -> String;
 }
-pub type Shapes = Vec<Box<dyn Shape>>;
+pub type Shapes = Vec<BShape>;
+pub type BShape = Box<dyn Shape>;
 
 use crate::shape::Thickness::{Thin,Normal,Thick};
 pub enum Thickness {
@@ -114,23 +115,44 @@ impl From<Cart> for Polar {
     }
 }
 
-pub struct RotatingSet {
-    shapes: Vec<Box<dyn Shape>>,
-    is_clockwise: bool,
+pub struct ShapeSet {
+    shapes: Shapes,
+    class: String,
 }
-impl RotatingSet {
-    pub fn new(shapes: Vec<Box<dyn Shape>>, is_clockwise:bool) -> Self {
-        Self { shapes,is_clockwise }
+const WORD_PULSE:bool = true;
+const SENTENCE_PULSE:bool = true;
+
+impl ShapeSet {
+    pub fn new_rotating(shapes: Shapes, is_clockwise:bool) -> Self {
+        let direction = if is_clockwise {"clockwise"} else {"anti_clockwise"};
+        let class = format!("{direction}_number");
+        Self { shapes,class }
+    }
+    pub fn new_rotating_class(shapes: Shapes, is_clockwise:bool,class:&str) -> Self {
+        let direction = if is_clockwise {"clockwise"} else {"anti_clockwise"};
+        let class = format!("{direction}_number {class}");
+        Self { shapes,class }
+    }
+    pub fn new(shapes:Shapes, class:&str) -> Self {
+        let mut class = class.to_string();
+        if WORD_PULSE && class.contains("word") && !class.contains("pulsing") {
+            class = format!("{class} pulsing");
+        }
+        if SENTENCE_PULSE && class.contains("sentence") && !class.contains("pulsing") {
+            class = format!("{class} pulsing");
+        }
+        Self { shapes,class }
     }
 }
-impl Shape for RotatingSet {
+
+impl Shape for ShapeSet {
     fn shove(&mut self, diff:Cart) {
-        &self.shapes.iter_mut().for_each(|s| s.shove(diff));
+        let _ = &self.shapes.iter_mut().for_each(|s| s.shove(diff));
     }
     fn to_element(&self) -> String {
-        let els = &self.shapes.iter().map(|s| s.to_element()).collect::<Vec<_>>().join("");
-        let direction = if self.is_clockwise {"clockwise"} else {"anti_clockwise"};
-        return format!("<g class=\"{direction}_number\">{els}</g>");
+        let els = &self.shapes.iter().map(|s| s.to_element()).collect::<Vec<_>>().join("\n");
+        let class = &self.class;
+        format!("<g class=\"{class}\">{els}</g>")
     }
 }
 

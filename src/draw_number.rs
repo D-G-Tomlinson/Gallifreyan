@@ -1,11 +1,11 @@
 use std::f64::consts::TAU;
-use crate::shape::{Polar, Cart, Circle, Line, Thickness, Shapes, WORD_RADIUS, Shape, RotatingSet};
+use crate::shape::{Polar, Cart, Circle, Line, Thickness, Shapes, WORD_RADIUS, Shape, ShapeSet, BShape};
 use crate::shape::Thickness::*;
 use crate::tree::{Number, Word};
 use crate::tree::Digit;
 
 impl Digit {
-    fn to_shapes(&self, outer:f64,inner:f64) -> Shapes {
+    fn to_shapes(&self, outer:f64,inner:f64,is_clockwise:bool) -> BShape {
         let outer_ring_thickness = if self.follows_dot {Thick} else {Normal};
         let mut shapes:Shapes =vec![Box::new(Circle::new(Cart::origin(),outer,Some(outer_ring_thickness)))];
 
@@ -27,11 +27,11 @@ impl Digit {
             shapes.push(Box::new(line));
             current_pos = current_pos.rotate(diff);
         }
-        return shapes;
+        return Box::new(ShapeSet::new_rotating_class(shapes, is_clockwise, "digit"));
     }
 }
 
-impl From<&Number> for Shapes {
+impl From<&Number> for BShape {
     fn from(number:&Number) -> Self {
         let mut shapes:Shapes = Shapes::new();
         let mut is_clockwise = false;
@@ -41,7 +41,7 @@ impl From<&Number> for Shapes {
         for d in &number.digits {
             current_outer = current_inner;
             current_inner = current_inner - delta_rad;
-            let digit_shapes = Box::new(RotatingSet::new(d.to_shapes(current_outer, current_inner),is_clockwise));
+            let digit_shapes = d.to_shapes(current_outer, current_inner, is_clockwise);
             shapes.push(digit_shapes);
             is_clockwise = !is_clockwise;
         }
@@ -52,16 +52,15 @@ impl From<&Number> for Shapes {
                 (true,false) => {
                     let circle = Circle::new(Cart::origin(),current_inner,Some(Thick));
                     let line = Line::new(Cart::new(0.0,current_inner),Cart::new(0.0,-current_inner),Thick);
-                    Box::new(RotatingSet::new(vec![Box::new(circle),Box::new(line)],is_clockwise))
+                    Box::new(ShapeSet::new_rotating(vec![Box::new(circle), Box::new(line)], is_clockwise))
                 },
                 (false,true) => Box::new(Circle::new(Cart::origin(),current_inner,Some(Normal))),
                 (false,false) => {
                     let circle = Circle::new(Cart::origin(),current_inner,Some(Normal));
                     let line = Line::new(Cart::new(0.0,current_inner),Cart::new(0.0,-current_inner),Normal);
-                    Box::new(RotatingSet::new(vec![Box::new(circle),Box::new(line)],is_clockwise))
+                    Box::new(ShapeSet::new_rotating(vec![Box::new(circle), Box::new(line)], is_clockwise))
                 },
         });
-
-        return shapes;
+        return Box::new(ShapeSet::new(shapes,"word number"));
     }
 }
