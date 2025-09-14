@@ -9,4 +9,4 @@ function process_conversion() {
 	container.innerHTML = result;
 }
 console.log("load");
-document.getElementById("input_button").addEventListener("click",process_conversion,false);
+document.getElementById("input_text").addEventListener("input",process_conversion,false);
