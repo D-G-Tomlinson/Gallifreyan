@@ -22,13 +22,13 @@
 	width: 95vmin;
 }
 .anti_clockwise_number {
-	animation: rotate 3s linear infinite;
+	animation: rotate 6s linear infinite;
 	transform-origin: 50% 50%;
 	transform-box: fill-box;
 	animation-direction: reverse;
 }
 .clockwise_number {
-	animation: rotate 3s linear infinite;
+	animation: rotate 6s linear infinite;
 	transform-origin: 50% 50%;
 	transform-box: fill-box;
 }

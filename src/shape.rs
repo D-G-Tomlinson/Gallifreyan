@@ -119,7 +119,7 @@ pub struct ShapeSet {
     shapes: Shapes,
     class: String,
 }
-const WORD_PULSE:bool = true;
+const WORD_PULSE:bool = false;
 const SENTENCE_PULSE:bool = true;
 
 impl ShapeSet {
