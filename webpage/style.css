@@ -15,7 +15,7 @@
 	align-items:center;
 	justify-content:center;
 }
-svg {
+#svg_box {
 	border: 5px dashed purple;
 	border-radius:5vmin;
 	height: 95vmin;
@@ -39,5 +39,21 @@ svg {
 	}
 	to {
 		transform: rotate(360deg);
+    }
+}
+
+.pulsing {
+	animation: pulse 1s linear infinite;
+	transform-origin: 50% 50%;
+	transform-box: fill-box;
+	animation-direction: alternate;	
+}
+
+@keyframes pulse {
+    from {
+		transform: scale(0.99);
+	}
+	to {
+		transform: scale(1.01);
     }
 }

@@ -188,7 +188,7 @@ impl TryFrom<String> for Svg {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let input = value.trim().to_lowercase().chars().collect::<Vec<char>>();
         if input.is_empty() {
-            return Ok(Svg("<svg viewBox=\"0 0 10 10\" version=\"1.1\" xmlns=\"https://github.com/D-G-Tomlinson/Gallifreyan\"></svg>".to_string()));
+            return Ok(Svg("<svg id=\"generated_svg\" viewBox=\"0 0 10 10\" version=\"1.1\" xmlns=\"https://github.com/D-G-Tomlinson/Gallifreyan\"></svg>".to_string()));
         }
 
         let words = get_words(input.into_iter().collect())?;
@@ -220,7 +220,10 @@ impl TryFrom<String> for Svg {
             format!("<svg
   viewBox=\"0 0 {length} {length}\"
   version=\"1.1\"
-  xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"> <g id=\"all_gall\">");
+  xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+  id=\"generated_svg\"
+  class=\"pulsing\">
+    <g id=\"all_gall\">");
 
         for el in &els {
             start.push_str(&el);

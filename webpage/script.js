@@ -5,7 +5,7 @@ function process_conversion() {
 	var text = document.getElementById("input_text").value;
 	var result = to_gallifreyan(text);
 	console.log("result: "+result);
-	var container = document.getElementById("svg_container");
+	var container = document.getElementById("svg_box");
 	container.innerHTML = result;
 }
 console.log("load");
