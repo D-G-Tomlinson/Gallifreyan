@@ -1,0 +1,24 @@
+{
+  "name": "gallifreyan",
+  "type": "module",
+  "collaborators": [
+    "David Tomlinson"
+  ],
+  "description": "Convert strings to Sherman's Gallifreyan",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/D-G-Tomlinson/Gallifreyan"
+  },
+  "files": [
+    "gallifreyan_bg.wasm",
+    "gallifreyan.js",
+    "gallifreyan.d.ts"
+  ],
+  "main": "gallifreyan.js",
+  "types": "gallifreyan.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
