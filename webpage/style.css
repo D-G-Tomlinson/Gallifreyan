@@ -8,6 +8,7 @@
 	height:200px;
 	fill: #000000;
 	stroke: #000000;
+	border-radius: 100px;
 }
 #svg_container{
 	position: absolute;
