@@ -14,18 +14,20 @@ pub trait Shape {
 pub type Shapes = Vec<BShape>;
 pub type BShape = Box<dyn Shape>;
 
-use crate::shape::Thickness::{Thin,Normal,Thick};
+use crate::shape::Thickness::*;
 pub enum Thickness {
     Thin,
     Normal,
     Thick,
+    ExtraThick,
 }
 impl Thickness {
     pub fn val(&self) -> f64 {
         match self {
-            Thin => WORD_RADIUS/100.0,
-            Normal => WORD_RADIUS/50.0,
-            Thick => WORD_RADIUS/25.0
+            Thin => WORD_RADIUS*0.01,
+            Normal => WORD_RADIUS*0.02,
+            Thick => WORD_RADIUS*0.04,
+            ExtraThick => WORD_RADIUS*0.08,
         }
     }
 }

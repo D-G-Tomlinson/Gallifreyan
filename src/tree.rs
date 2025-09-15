@@ -237,6 +237,7 @@ impl TryFrom<Vec<char>> for Number {
                 is_whole = false;
             } else {
                 digits.push(Digit::try_from(d,was_dot)?);
+                was_dot = false;
             }
         }
         Ok(Number{ is_positive,is_whole, digits})
