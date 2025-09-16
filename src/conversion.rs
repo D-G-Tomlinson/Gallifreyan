@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use std::f64::consts::TAU;
 use crate::tree::{Sentence, Word};
 use crate::tree::Number;
-use crate::shape::{BShape, WORD_RADIUS};
+use crate::shape::{BShape, SENTENCE_RADIUS};
 use crate::shape::{Cart, Circle, Polar, Shapes};
 use crate::draw_word::draw_plain_word;
 pub struct Svg(String);
@@ -22,7 +22,9 @@ impl TryFrom<String> for Svg {
         }
 
         let sentence = &Sentence::try_from(input.into_iter().collect::<Vec<char>>())?;
-        let (mut sentence,length):(BShape,f64) = sentence.try_into()?;
+        let sen_rad=SENTENCE_RADIUS;
+        let mut sentence:BShape = (sentence,sen_rad).try_into()?;
+        let length = sen_rad * 2.0 * 1.1;
         let half_length = Cart::new(length/2.0,length/2.0);
         sentence.shove(half_length);
         let els = sentence.to_element();

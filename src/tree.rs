@@ -62,7 +62,7 @@ pub enum Letter {
     VOpt(Vowel),
 }
 
-fn chars_to_letters(chars:Vec<char>) -> Result<Vec<Letter>,&'static str> {
+fn chars_to_letters(chars:Vec<char>) -> Result<Vec<Letter>,String> {
     let singles:HashMap<char,Letter> = HashMap::from([
         ('a',get_v(A,false)),
         ('e',get_v(E,false)),
@@ -120,7 +120,7 @@ fn chars_to_letters(chars:Vec<char>) -> Result<Vec<Letter>,&'static str> {
             result.push(singles[&next].clone());
             i += 1;
         } else {
-            return Err("invalid letter found");
+            return Err(format!("Invalid letter found: {:#?}",next));
         }
     }
     if i<chars.len() && singles.contains_key(&chars[i]) {
@@ -162,7 +162,7 @@ fn join_cv(letters:Vec<Letter>) -> Vec<Letter> {
 }
 
 impl TryFrom<Vec<char>> for Word {
-    type Error = &'static str;
+    type Error = String;
     fn try_from(chars:Vec<char>) -> Result<Self, Self::Error> {
         let result = match chars_to_letters(chars) {
             Ok(l) => l,
@@ -205,7 +205,7 @@ pub struct Digit {
 impl Digit {
     fn try_from(char:&char,follows_dot:bool) -> Result<Self, String> {
         if !('0'..='9').contains(&char) {
-            return Err(format!("invalid digit {}", char));
+            return Err(format!("invalid digit {:#?}", char));
         }
         let val = char.to_digit(10).unwrap() as u8;
         let has_circle = val >= 5;
@@ -237,6 +237,7 @@ impl TryFrom<Vec<char>> for Number {
                 is_whole = false;
             } else {
                 digits.push(Digit::try_from(d,was_dot)?);
+                was_dot = false;
             }
         }
         Ok(Number{ is_positive,is_whole, digits})
@@ -380,7 +381,7 @@ impl TryFrom<Vec<char>> for Sentence {
                         current_word = Some(PlainWord(vec![*c]));
                     }
                 },
-                _ => return Err(format!("{} is not a valid letter", c)),
+                _ => return Err(format!("{:#?} is not a valid letter", c)),
             }
         }
         if let Some(cw) = current_word {

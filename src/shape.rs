@@ -3,7 +3,7 @@ use std::boxed::Box;
 use std::f64::consts::PI;
 use std::f64::consts::TAU;
 
-pub const WORD_RADIUS:f64 = 10.0;
+pub const SENTENCE_RADIUS:f64 = 100.0;
 
 const FILL:&str="current";
 const STROKE:&str="current";
@@ -14,18 +14,20 @@ pub trait Shape {
 pub type Shapes = Vec<BShape>;
 pub type BShape = Box<dyn Shape>;
 
-use crate::shape::Thickness::{Thin,Normal,Thick};
+use crate::shape::Thickness::*;
 pub enum Thickness {
     Thin,
     Normal,
     Thick,
+    ExtraThick,
 }
 impl Thickness {
-    pub fn val(&self) -> f64 {
+    pub fn val(&self,mult:f64) -> f64 {
         match self {
-            Thin => WORD_RADIUS/100.0,
-            Normal => WORD_RADIUS/50.0,
-            Thick => WORD_RADIUS/25.0
+            Thin => mult*0.01,
+            Normal => mult*0.02,
+            Thick => mult*0.04,
+            ExtraThick => mult*0.08,
         }
     }
 }
@@ -159,11 +161,11 @@ impl Shape for ShapeSet {
 pub struct Circle {
     centre: Cart,
     radius:f64,
-    thickness:Option<Thickness>, // no thickness indicates fill
+    thickness:Option<f64>, // no thickness indicates fill
 }
 
 impl Circle {
-    pub fn new(centre: Cart, radius:f64, thickness:Option<Thickness>) -> Self {
+    pub fn new(centre: Cart, radius:f64, thickness:Option<f64>) -> Self {
         Self { centre, radius, thickness }
     }
 }
@@ -174,7 +176,7 @@ impl Shape for Circle {
     }
     fn to_element(&self) -> String {
         let (opacity,width) = match &self.thickness {
-            Some(t) => (0.0,t.val()),
+            Some(t) => (0.0,*t),
             None => (1.0,0.0)
         };
         return format!("<circle  cx=\"{}\" cy=\"{}\" r=\"{}\" stroke-width=\"{}\" fill-opacity=\"{}\" />",
@@ -192,11 +194,11 @@ pub struct Arc {
     radius:f64,
     large:bool,//do we take the long way round
     clockwise:bool,
-    thickness:Thickness,
+    thickness:f64,
 }
 
 impl Arc {
-    pub fn new(start:Cart,end:Cart, radius:f64, large:bool,clockwise:bool, thickness:Thickness) -> Self {
+    pub fn new(start:Cart,end:Cart, radius:f64, large:bool,clockwise:bool, thickness:f64,) -> Self {
         Self {start, end, radius, large,clockwise, thickness}
     }
 }
@@ -207,7 +209,7 @@ impl Shape for Arc {
         self.end.shove(diff);
     }
     fn to_element(&self) -> String {
-        let width = self.thickness.val();
+        let width = self.thickness;
         let large = match self.large {
             true => 1,
             false => 0
@@ -217,7 +219,7 @@ impl Shape for Arc {
             false => 0
         };
         return format!("<path fill-opacity=\"0\" stroke-width=\"{}\" d=\"M {} {} A {} {} 0 {} {} {} {}\" />",
-            self.thickness.val(),
+            self.thickness,
             self.start.x,
             self.start.y,
             self.radius,
@@ -233,11 +235,12 @@ pub
 struct Line {
     start: Cart,
     end: Cart,
-    thickness:Thickness,
+    thickness:f64,
+    rounded:bool,
 }
 impl Line {
-    pub fn new(start:Cart, end:Cart, thickness:Thickness) -> Self {
-        Self {start, end, thickness}
+    pub fn new(start:Cart, end:Cart, thickness:f64,rounded:bool) -> Self {
+        Self {start, end, thickness, rounded}
     }
 }
 impl Shape for Line {
@@ -246,13 +249,17 @@ impl Shape for Line {
         self.end.shove(diff);
     }
     fn to_element(&self) -> String {
-        let width = self.thickness.val();
-        return format!("<path stroke-width=\"{}\" d=\"M {} {} L {} {}\" />",
-                       self.thickness.val(),
+        let round = match self.rounded {
+            true => Circle::new(self.end,self.thickness*0.5,None).to_element(),
+            false => String::from(""),
+        };
+        return format!("<path stroke-width=\"{}\" d=\"M {} {} L {} {}\" />{}",
+                       self.thickness,
                        self.start.x,
                        self.start.y,
                        self.end.x,
                        self.end.y,
-        )
+            round
+        );
     }
 }
