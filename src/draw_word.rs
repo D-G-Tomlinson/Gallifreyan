@@ -11,7 +11,7 @@ const CONSONANT_MODIFIER:f64 = 0.6;
 fn one_letter_word(letter:&Letter) -> BShape {
     let pi = std::f64::consts::PI;
     let diff = pi/2.0;
-    let start = crate::shape::Polar::new(WORD_RADIUS, -(pi+diff)/2.0);
+    let start = crate::shape::Polar::new(word_radius, -(pi+diff)/2.0);
     let middle = start.rotate(diff/2.0);
     let end = middle.rotate(diff/2.0);
 
@@ -21,7 +21,7 @@ fn one_letter_word(letter:&Letter) -> BShape {
     let mut letter = draw_letter(letter, (start,middle,end));
     shapes.push(letter);
 
-    let connector = crate::shape::Arc::new(end.into(), start.into(), WORD_RADIUS, true, false, crate::shape::Thickness::Normal);
+    let connector = crate::shape::Arc::new(end.into(), start.into(), word_radius, true, false, crate::shape::Thickness::Normal);
     shapes.push(Box::new(connector));
     return Box::new(ShapeSet::new(shapes,"plainword word"));
 
@@ -39,7 +39,7 @@ pub fn draw_plain_word(word: &Word, pos:&Polar) -> BShape {
 
     let pi = std::f64::consts::PI;
     let each = pi/num_parts as f64;
-    let mut start = crate::shape::Polar::new(WORD_RADIUS, -(pi+each)/2.0);
+    let mut start = crate::shape::Polar::new(word_radius, -(pi+each)/2.0);
 
     let mut result = Shapes::new();
 
@@ -50,7 +50,7 @@ pub fn draw_plain_word(word: &Word, pos:&Polar) -> BShape {
         result.push(draw_letter(l,(start, middle, end)));
 
         let next = end.rotate(each);
-        let connecting_arc = Box::new(crate::shape::Arc::new(end.into(), next.into(), WORD_RADIUS, false, false, crate::shape::Thickness::Normal));
+        let connecting_arc = Box::new(crate::shape::Arc::new(end.into(), next.into(), word_radius, false, false, crate::shape::Thickness::Normal));
         result.push(connecting_arc);
         start = next;
     }
@@ -68,7 +68,7 @@ fn draw_letter(letter:&Letter, (start,middle,end):(Polar,Polar,Polar)) -> BShape
 
 fn draw_loose_vowel(vowel:&Vowel, (start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> BShape {
     let mut shapes = Shapes::new();
-    let connecting_arc = Box::new(crate::shape::Arc::new(start.into(), end.into(), WORD_RADIUS, false, false, Normal));
+    let connecting_arc = Box::new(crate::shape::Arc::new(start.into(), end.into(), word_radius, false, false, Normal));
     shapes.push(connecting_arc);
 
     let inner = middle.extend(-std_dist*VOWEL_MODIFIER*1.01);
@@ -103,7 +103,7 @@ fn draw_vowel(vowel:&Vowel, (inner,middle,outer):(Polar,Polar,Polar),std_dist:f6
         },
         U => {
             let start:Cart = polar_centre.extend(radius).into();
-            let end:Cart = Polar::new(WORD_RADIUS*1.3,polar_centre.theta).into();
+            let end:Cart = Polar::new(word_radius*1.3,polar_centre.theta).into();
             let line = Line::new(start,end,Normal);
             shapes.push(Box::new(line));
         },
@@ -114,7 +114,7 @@ fn draw_vowel(vowel:&Vowel, (inner,middle,outer):(Polar,Polar,Polar),std_dist:f6
 fn draw_consonant(consonant: &Consonant, (start,middle,end):(Polar,Polar,Polar),std_dist:f64) -> BShape {
     let mut shapes = Shapes::new();
     match consonant.arc {
-        Above|On => shapes.push(Box::new(crate::shape::Arc::new(start.into(), end.into(), WORD_RADIUS, false, false, crate::shape::Thickness::Normal))),
+        Above|On => shapes.push(Box::new(crate::shape::Arc::new(start.into(), end.into(), word_radius, false, false, crate::shape::Thickness::Normal))),
         _ => ()
     }
 
@@ -139,15 +139,15 @@ fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Option<Marks>,diac
 
     let mut shapes = Shapes::new();
     shapes.push(Box::new(Arc::new(in_start, in_end, radius, true, true, Normal)));
-    shapes.push(Box::new(Circle::new(in_start,Normal.val()*0.5,None)));
-    shapes.push(Box::new(Circle::new(in_end,Normal.val()*0.5,None)));
+    shapes.push(Box::new(Circle::new(in_start,Normal.val(word_radius)*0.5,None)));
+    shapes.push(Box::new(Circle::new(in_end,Normal.val(word_radius)*0.5,None)));
     let start_arc = Arc::new(start.into(),in_start.into(),middle.radius,false,false,Normal);
     let end_arc = Arc::new(in_end.into(),end.into(),middle.radius,false,false,Normal);
     shapes.push(Box::new(start_arc));
     shapes.push(Box::new(end_arc));
 
     let rotation = Polar::new(end.radius,2.0*diff);
-    let centre_radius = get_centre_radius(WORD_RADIUS,radius,end.divide(&start).divide(&rotation).theta,true);
+    let centre_radius = get_centre_radius(word_radius,radius,end.divide(&start).divide(&rotation).theta,true);
     let centre = Polar::new(centre_radius,middle.theta);
 
     let avoid_centre:bool;
@@ -218,17 +218,17 @@ fn get_above_arc(middle:Polar,std_dist:f64,marks: &Option<Marks>,diacritic:&Opti
 }
 fn get_small_arc((start,middle,end):(Polar,Polar,Polar),std_dist:f64,marks: &Option<Marks>,diacritic:&Option<Vowel>) -> Shapes {
     let radius = std_dist * CONSONANT_MODIFIER;
-    let mut shapes:Shapes = vec![Box::new(Arc::new(start.into(),end.into(),radius,false,true,Normal))];
-    shapes.push(Box::new(Circle::new(start.into(),Normal.val()*0.5,None)));
-    shapes.push(Box::new(Circle::new(end.into(),Normal.val()*0.5,None)));
+    let mut shapes:Shapes = vec![Box::new(Arc::new(start.into(),end.into(),radius,false,true,Normal.val(word_radius)))];
+    shapes.push(Box::new(Circle::new(start.into(),Normal.val(word_radius)*0.5,None)));
+    shapes.push(Box::new(Circle::new(end.into(),Normal.val(word_radius)*0.5,None)));
 
     let outer = middle.extend(std_dist*VOWEL_MODIFIER*1.1);
-    let centre_radius = get_centre_radius(WORD_RADIUS,radius,end.divide(&start).theta,false);
+    let centre_radius = get_centre_radius(word_radius,radius,end.divide(&start).theta,false);
     let centre = Polar::new(centre_radius,middle.theta);
     let avoid_centre:bool;
     if let Some(v) = diacritic {
         let inner = centre.extend(-radius);
-        let middle = Polar::new((inner.radius+WORD_RADIUS)/2.0,middle.theta);
+        let middle = Polar::new((inner.radius+word_radius)/2.0,middle.theta);
         shapes.push(draw_vowel(v,(inner,middle,outer),std_dist));
         avoid_centre = v.v.centre();
     } else {

@@ -22,12 +22,12 @@ pub enum Thickness {
     ExtraThick,
 }
 impl Thickness {
-    pub fn val(&self) -> f64 {
+    pub fn val(&self,mult:f64) -> f64 {
         match self {
-            Thin => WORD_RADIUS*0.01,
-            Normal => WORD_RADIUS*0.02,
-            Thick => WORD_RADIUS*0.04,
-            ExtraThick => WORD_RADIUS*0.08,
+            Thin => mult*0.01,
+            Normal => mult*0.02,
+            Thick => mult*0.04,
+            ExtraThick => mult*0.08,
         }
     }
 }
@@ -161,11 +161,11 @@ impl Shape for ShapeSet {
 pub struct Circle {
     centre: Cart,
     radius:f64,
-    thickness:Option<Thickness>, // no thickness indicates fill
+    thickness:Option<f64>, // no thickness indicates fill
 }
 
 impl Circle {
-    pub fn new(centre: Cart, radius:f64, thickness:Option<Thickness>) -> Self {
+    pub fn new(centre: Cart, radius:f64, thickness:Option<f64>) -> Self {
         Self { centre, radius, thickness }
     }
 }
@@ -176,7 +176,7 @@ impl Shape for Circle {
     }
     fn to_element(&self) -> String {
         let (opacity,width) = match &self.thickness {
-            Some(t) => (0.0,t.val()),
+            Some(t) => (0.0,*t),
             None => (1.0,0.0)
         };
         return format!("<circle  cx=\"{}\" cy=\"{}\" r=\"{}\" stroke-width=\"{}\" fill-opacity=\"{}\" />",
@@ -194,11 +194,11 @@ pub struct Arc {
     radius:f64,
     large:bool,//do we take the long way round
     clockwise:bool,
-    thickness:Thickness,
+    thickness:f64,
 }
 
 impl Arc {
-    pub fn new(start:Cart,end:Cart, radius:f64, large:bool,clockwise:bool, thickness:Thickness) -> Self {
+    pub fn new(start:Cart,end:Cart, radius:f64, large:bool,clockwise:bool, thickness:f64) -> Self {
         Self {start, end, radius, large,clockwise, thickness}
     }
 }
@@ -209,7 +209,7 @@ impl Shape for Arc {
         self.end.shove(diff);
     }
     fn to_element(&self) -> String {
-        let width = self.thickness.val();
+        let width = self.thickness;
         let large = match self.large {
             true => 1,
             false => 0
@@ -219,7 +219,7 @@ impl Shape for Arc {
             false => 0
         };
         return format!("<path fill-opacity=\"0\" stroke-width=\"{}\" d=\"M {} {} A {} {} 0 {} {} {} {}\" />",
-            self.thickness.val(),
+            self.thickness,
             self.start.x,
             self.start.y,
             self.radius,
@@ -235,10 +235,10 @@ pub
 struct Line {
     start: Cart,
     end: Cart,
-    thickness:Thickness,
+    thickness:f64,
 }
 impl Line {
-    pub fn new(start:Cart, end:Cart, thickness:Thickness) -> Self {
+    pub fn new(start:Cart, end:Cart, thickness:f64) -> Self {
         Self {start, end, thickness}
     }
 }
@@ -248,9 +248,8 @@ impl Shape for Line {
         self.end.shove(diff);
     }
     fn to_element(&self) -> String {
-        let width = self.thickness.val();
         return format!("<path stroke-width=\"{}\" d=\"M {} {} L {} {}\" />",
-                       self.thickness.val(),
+                       self.thickness,
                        self.start.x,
                        self.start.y,
                        self.end.x,
