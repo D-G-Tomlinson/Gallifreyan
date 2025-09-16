@@ -3,7 +3,7 @@
 	height: 20vh;
 	resize: none;
 }
-#input_button {
+.gall_button {
 	width: 200px;
 	height:200px;
 	fill: #000000;
