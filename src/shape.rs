@@ -3,7 +3,7 @@ use std::boxed::Box;
 use std::f64::consts::PI;
 use std::f64::consts::TAU;
 
-pub const WORD_RADIUS:f64 = 10.0;
+pub const SENTENCE_RADIUS:f64 = 100.0;
 
 const FILL:&str="current";
 const STROKE:&str="current";
