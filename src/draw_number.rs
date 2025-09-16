@@ -50,7 +50,6 @@ fn get_centre(is_whole:&bool,is_positive:&bool,current_inner:f64,is_clockwise:bo
 
 impl From<(&Number,f64)> for BShape {
     fn from((number,word_radius):(&Number,f64)) -> Self {
-        println!("Number: {:?}", number);
         let mut shapes:Shapes = Shapes::new();
         let mut is_clockwise = false;
         let delta_rad = word_radius/(number.digits.len() as f64 + 1f64);
