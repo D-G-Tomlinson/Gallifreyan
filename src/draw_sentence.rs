@@ -50,8 +50,8 @@ impl TryFrom<(&Sentence,f64)> for BShape {//also return length
 
         let mut shapes:Shapes = Vec::new();
 
-        shapes.push(Box::new(Circle::new(Cart::origin(), sen_rad+2.0*Thick.val(sen_rad),Some(Thick.val(sen_rad)))));
-        shapes.push(Box::new(Circle::new(Cart::origin(), sen_rad+(Thick.val(sen_rad)/2.0),Some(Thin.val(sen_rad)))));
+        shapes.push(Box::new(Circle::new(Cart::origin(), sen_rad+2.0*Normal.val(sen_rad),Some(Normal.val(sen_rad)))));
+        shapes.push(Box::new(Circle::new(Cart::origin(), sen_rad+(Normal.val(sen_rad)/2.0),Some(Thin.val(sen_rad)))));
 
         for word in &sentence.words {
             let (new_shapes,new_next) = draw_word(word, &pos, &last, diff,word_radius)?;
