@@ -46,7 +46,7 @@ fn main() {
   </head>
   <body>
 	<h1>Welcome to David's circle</h1>
-    <div style=\"width: 500px; height: 500px\">
+    <div style=\"width: 500px; height: 500px; stroke: #000000; fill: #000000\">
 ").unwrap();
     file.write_all(output.as_bytes()).unwrap();
     file.write_all(b"
