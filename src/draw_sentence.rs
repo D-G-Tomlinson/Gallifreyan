@@ -31,7 +31,7 @@ fn draw_word(word: &WordTypes, this:&Polar,last:&Polar,diff:f64,word_radius:f64)
         PlainWord(word) => {
             let word = Word::try_from(word.clone())?;
             let cart_pos:Cart = Cart::from(this.clone());
-            let mut these_shapes = draw_plain_word(&word, this);
+            let mut these_shapes = draw_plain_word(&word, this,word_radius);
             these_shapes.shove(cart_pos);
             Ok((these_shapes,this.rotate(diff)))
         },
