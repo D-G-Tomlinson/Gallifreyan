@@ -299,7 +299,7 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
         cpos = ppos.into();
         cpos.shove(centre);
         shapes.push(if is_line {
-            let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER).into();
+            let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER*0.6).into();
             end.shove(centre);
             Box::new(Line::new(cpos,end,Thick.val(word_radius),true))
         } else {
