@@ -5,10 +5,13 @@
 }
 .gall_button {
 	width: 200px;
-	height:200px;
+	height: 200px;
 	fill: #000000;
 	stroke: #000000;
-	border-radius: 100px;
+	border-radius: 50%;
+}
+#download_link {
+	display:block;
 }
 #svg_container{
 	position: absolute;

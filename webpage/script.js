@@ -1,7 +1,7 @@
 import init, {to_gallifreyan } from "./pkg/gallifreyan.js";
 init().then();
 
-const downloadhtml = '<a id="download_link" download="gallifreyan.svg"><button class="gall_button"><img id="download_img" class="pulsing" src="webpage/Images/download.svg" alt="convert"></button></a>';
+const downloadhtml = '<a class="gall_button" id="download_link" title="Download" download="gallifreyan.svg"><button class="gall_button"><img id="download_img" class="pulsing" src="webpage/Images/download.svg" alt="download"></button></a>';
 
 function get_el(html) {
 	var templ = document.createElement("template");
@@ -23,12 +23,14 @@ function add_download(text) {
 	}
 	if (!down_butt) {
 		let new_download = get_el(downloadhtml);
-		document.body.appendChild(new_download);
+		document.getElementById("buttons").appendChild(new_download);
 	}
 	let style = window.getComputedStyle(document.getElementById("generated_svg"),null);
 	svg.setAttribute("stroke",style.stroke);
 	svg.setAttribute("fill", style.fill);
-	document.getElementById("download_link").setAttribute("href","data:image/svg+xml;base64," + btoa(svg.outerHTML));
+	let address = "data:image/svg+xml;base64," + btoa(svg.outerHTML);
+	console.log(address);
+	document.getElementById("download_link").setAttribute("href",address);
 }
 function process_conversion() {
 	let result = to_gallifreyan(document.getElementById("input_text").value);
