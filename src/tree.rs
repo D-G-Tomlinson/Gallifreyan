@@ -131,10 +131,11 @@ fn chars_to_letters(chars:Vec<char>) -> Result<Vec<Letter>,String> {
 
 fn join_cv(letters:Vec<Letter>) -> Vec<Letter> {
     let mut result:Vec<Letter> = Vec::new();
-
+    if letters.len() == 0 {
+        return result;
+    }
     let mut i = 0;
-
-    while i < letters.len()-1 {
+    while i < letters.len() -1 {
         match &letters[i] {
             COpt(c) => {
                 match c.diacritic {
@@ -367,7 +368,7 @@ impl TryFrom<Vec<char>> for Sentence {
                         if let Some(cw) = current_word {
                             words.push(cw);
                         }
-                        current_word = Some(PlainWord(vec![*c]));
+                        current_word = Some(Punctuation(vec![SEnd(c.clone())]));
                     }
                 },
                 //normal, ending punctuation
@@ -378,7 +379,7 @@ impl TryFrom<Vec<char>> for Sentence {
                         if let Some(cw) = current_word {
                             words.push(cw);
                         }
-                        current_word = Some(PlainWord(vec![*c]));
+                        current_word = Some(Punctuation(vec![SEnd(c.clone())]));
                     }
                 },
                 _ => return Err(format!("{:#?} is not a valid letter", c)),

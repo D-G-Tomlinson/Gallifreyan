@@ -32,7 +32,7 @@ fn draw_word(word: &WordTypes, this:&Polar,last:&Polar,diff:f64,word_radius:f64)
             Ok((these_shapes,this.rotate(diff)))
         },
         Punctuation(word) => {
-            todo!()
+            return Err(format!("Punctuation not implemented for {:?}", word));
         }
     }
 }
