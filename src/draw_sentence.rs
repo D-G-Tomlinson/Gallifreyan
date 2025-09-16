@@ -4,17 +4,6 @@ use crate::shape::{BShape, Cart, Circle, Polar, ShapeSet, Shapes,Thickness::*};
 use crate::tree::{Number, Sentence, Word,WordTypes,WordTypes::*};
 
 
-fn get_inner_outer_diff(num_words:u32,word_radius:f64) -> (f64,f64,f64) {
-    let diff = TAU/num_words as f64;
-    let max_word_radius = 1.6*word_radius;
-    let inner_radius = match num_words {
-        0|1 => 0f64,
-        n => (2.0*max_word_radius*max_word_radius/(1.0-diff.cos())).sqrt()
-    };
-    let outer_radius = inner_radius+max_word_radius;
-    return (inner_radius, outer_radius, diff);
-}
-
 fn get_word_rad(sen_rad:f64,num_words:u32) -> (f64, f64,f64){
     let diff = TAU/num_words as f64;
     let max_word_radius = match num_words {
@@ -61,8 +50,8 @@ impl TryFrom<(&Sentence,f64)> for BShape {//also return length
 
         let mut shapes:Shapes = Vec::new();
 
-        shapes.push(Box::new(Circle::new(Cart::origin(), sen_rad,Some(Thick.val(sen_rad)))));
-        shapes.push(Box::new(Circle::new(Cart::origin(), sen_rad-2.0*Thick.val(sen_rad),Some(Thin.val(sen_rad)))));
+        shapes.push(Box::new(Circle::new(Cart::origin(), sen_rad+2.0*Thick.val(sen_rad),Some(Thick.val(sen_rad)))));
+        shapes.push(Box::new(Circle::new(Cart::origin(), sen_rad+(Thick.val(sen_rad)/2.0),Some(Thin.val(sen_rad)))));
 
         for word in &sentence.words {
             let (new_shapes,new_next) = draw_word(word, &pos, &last, diff,word_radius)?;
