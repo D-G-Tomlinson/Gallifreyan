@@ -98,13 +98,13 @@ fn draw_vowel(vowel:&Vowel, (inner,middle,outer):(Polar,Polar,Polar),std_dist:f6
         I => {
             let start:Cart = polar_centre.extend(-radius).into();
             let end = Cart::origin();
-            let line = Line::new(start,end,Normal.val(word_radius));
+            let line = Line::new(start,end,Normal.val(word_radius),true);
             shapes.push(Box::new(line));
         },
         U => {
             let start:Cart = polar_centre.extend(radius).into();
             let end:Cart = Polar::new(word_radius*1.3,polar_centre.theta).into();
-            let line = Line::new(start,end,Normal.val(word_radius));
+            let line = Line::new(start,end,Normal.val(word_radius),true);
             shapes.push(Box::new(line));
         },
         _ => ()
@@ -289,7 +289,7 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
         shapes.push(if is_line {
             let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER).into();
             end.shove(centre);
-            Box::new(Line::new(cpos,end,Thick.val(word_radius)))
+            Box::new(Line::new(cpos,end,Thick.val(word_radius),true))
         } else {
             Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,Some(Thin.val(word_radius))))
         });
@@ -301,7 +301,7 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
         shapes.push(if is_line {
             let mut end :Cart= ppos.extend(std_dist*CONSONANT_MODIFIER).into();
             end.shove(centre);
-            Box::new(Line::new(cpos,end,Thick.val(word_radius)))
+            Box::new(Line::new(cpos,end,Thick.val(word_radius),true))
         } else {
             Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,None))
         });
@@ -313,7 +313,7 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
         shapes.push(if is_line {
             let mut end: Cart = ppos.extend(std_dist * CONSONANT_MODIFIER).into();
             end.shove(centre);
-            Box::new(Line::new(cpos, end, Thick.val(word_radius)))
+            Box::new(Line::new(cpos, end, Thick.val(word_radius),true))
         } else {
             Box::new(Circle::new(cpos, std_dist * CONSONANT_MODIFIER*0.1,Some(Thick.val(word_radius))))
         });

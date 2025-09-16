@@ -23,7 +23,7 @@ impl From<(&Digit, f64,f64,bool,f64)> for BShape {
         for _ in 0..digit.num_lines {
             let start:Cart = current_pos.extend(-half_dist).into();
             let end:Cart = current_pos.extend(half_dist).into();
-            let line:Line = Line::new(start,end,Normal.val(word_radius));
+            let line:Line = Line::new(start,end,Normal.val(word_radius),false);
             shapes.push(Box::new(line));
             current_pos = current_pos.rotate(diff);
         }
@@ -36,13 +36,13 @@ fn get_centre(is_whole:&bool,is_positive:&bool,current_inner:f64,is_clockwise:bo
         (true,true) => Box::new(Circle::new(Cart::origin(),current_inner,None)),
         (true,false) => {
             let circle = Circle::new(Cart::origin(),current_inner,Some(ExtraThick.val(word_radius)));
-            let line = Line::new(Cart::new(0.0,current_inner),Cart::new(0.0,-current_inner),ExtraThick.val(word_radius));
+            let line = Line::new(Cart::new(0.0,current_inner),Cart::new(0.0,-current_inner),ExtraThick.val(word_radius),false);
             Box::new(ShapeSet::new_rotating(vec![Box::new(circle), Box::new(line)], is_clockwise))
         },
         (false,true) => Box::new(Circle::new(Cart::origin(),current_inner,Some(Normal.val(word_radius)))),
         (false,false) => {
             let circle = Circle::new(Cart::origin(),current_inner,Some(Normal.val(word_radius)));
-            let line = Line::new(Cart::new(0.0,current_inner),Cart::new(0.0,-current_inner),Normal.val(word_radius));
+            let line = Line::new(Cart::new(0.0,current_inner),Cart::new(0.0,-current_inner),Normal.val(word_radius),false);
             Box::new(ShapeSet::new_rotating(vec![Box::new(circle), Box::new(line)], is_clockwise))
         },
     }

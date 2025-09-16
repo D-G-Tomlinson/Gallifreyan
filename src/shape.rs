@@ -198,7 +198,7 @@ pub struct Arc {
 }
 
 impl Arc {
-    pub fn new(start:Cart,end:Cart, radius:f64, large:bool,clockwise:bool, thickness:f64) -> Self {
+    pub fn new(start:Cart,end:Cart, radius:f64, large:bool,clockwise:bool, thickness:f64,) -> Self {
         Self {start, end, radius, large,clockwise, thickness}
     }
 }
@@ -236,10 +236,11 @@ struct Line {
     start: Cart,
     end: Cart,
     thickness:f64,
+    rounded:bool,
 }
 impl Line {
-    pub fn new(start:Cart, end:Cart, thickness:f64) -> Self {
-        Self {start, end, thickness}
+    pub fn new(start:Cart, end:Cart, thickness:f64,rounded:bool) -> Self {
+        Self {start, end, thickness, rounded}
     }
 }
 impl Shape for Line {
@@ -248,12 +249,17 @@ impl Shape for Line {
         self.end.shove(diff);
     }
     fn to_element(&self) -> String {
-        return format!("<path stroke-width=\"{}\" d=\"M {} {} L {} {}\" />",
+        let round = match self.rounded {
+            true => Circle::new(self.end,self.thickness*0.5,None).to_element(),
+            false => String::from(""),
+        };
+        return format!("<path stroke-width=\"{}\" d=\"M {} {} L {} {}\" />{}",
                        self.thickness,
                        self.start.x,
                        self.start.y,
                        self.end.x,
                        self.end.y,
-        )
+            round
+        );
     }
 }
