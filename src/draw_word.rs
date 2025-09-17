@@ -71,9 +71,9 @@ fn draw_loose_vowel(vowel:&Vowel, (start,middle,end):(Polar,Polar,Polar),std_dis
     let connecting_arc = Box::new(crate::shape::Arc::new(start.into(), end.into(), word_radius, false, false, Normal.val(word_radius)));
     shapes.push(connecting_arc);
 
-    let inner = middle.extend(-std_dist*VOWEL_MODIFIER*1.01);
-    let outer = middle.extend(std_dist*VOWEL_MODIFIER*1.01);
-    shapes.push(draw_vowel(vowel,(inner,middle,outer),std_dist,word_radius));
+    let inner = middle.extend(-std_dist*VOWEL_MODIFIER*2.0*1.01);
+    let outer = middle.extend(std_dist*VOWEL_MODIFIER*2.0*1.01);
+    shapes.push(draw_vowel(vowel,(inner,middle,outer),std_dist*2.0,word_radius));
 
     return Box::new(ShapeSet::new(shapes,"letter"));
 }
@@ -134,8 +134,8 @@ fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Option<Marks>,diac
     let diff = end.divide(&start).theta/4.0;
     let in_start:Cart = start.rotate(diff).into();
     let in_end:Cart = end.rotate(-diff).into();
-    let std_dist = in_start.distance(&in_end);
-    let radius = std_dist * CONSONANT_MODIFIER;
+    let std_dist = Cart::from(start).distance(&end.into());;
+    let radius = in_start.distance(&in_end) * CONSONANT_MODIFIER;
 
     let mut shapes = Shapes::new();
     shapes.push(Box::new(Arc::new(in_start, in_end, radius, true, true, Normal.val(word_radius))));
@@ -152,10 +152,8 @@ fn get_big_arc((start,middle,end):(Polar,Polar,Polar),marks: &Option<Marks>,diac
 
     let avoid_centre:bool;
     if let Some(v) = diacritic {
-        let c_start:Cart = start.into();
-        let v_std_dist = c_start.distance(&end.into());
-        let v_pos = get_big_arc_v_pos(middle,radius,v_std_dist,centre);
-        shapes.push(draw_vowel(&v,v_pos,v_std_dist,word_radius));
+        let v_pos = get_big_arc_v_pos(middle,radius,std_dist,centre);
+        shapes.push(draw_vowel(&v,v_pos,std_dist,word_radius));
         avoid_centre = v.v.centre()
     }else {
         avoid_centre = false;
@@ -212,7 +210,7 @@ fn get_above_arc(middle:Polar,std_dist:f64,marks: &Option<Marks>,diacritic:&Opti
     if let Some(m) = marks {
         let start = Polar::new(radius,middle.theta);
         let relative_pos = (start.rotate(7f64*TAU/8f64),start.rotate(TAU/8f64));
-        shapes.append(&mut add_marks(m,centre,relative_pos,avoid_centre,std_dist*0.75,word_radius));
+        shapes.append(&mut add_marks(m,centre,relative_pos,avoid_centre,std_dist,word_radius));
     }
     return shapes;
 }
@@ -270,17 +268,17 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
         Marks::Line(n) => (*n,true),
         Marks::Dot(n) => (*n,false),
     };
-    let diff_num:f64 = if avoid_centre && (num%2)!=0 {
-        num as f64+ 2f64
+    let diff_num:f64 = if avoid_centre && (num%2)==1 {
+        num as f64
     } else {
-        num as f64+ 1f64
+        num as f64 - 1.0
     };
-    let diff = end.divide(&start).theta;
-    let diff = TAU-diff;
-    let diff = diff/diff_num;
-
-
     let mut ppos = start;
+    let diff = end.divide(&start).theta;
+    let total_diff = TAU-diff;
+    let diff = total_diff/diff_num;
+
+
     let mut shapes:Shapes = Vec::new();
     let mut cpos:Cart;
     if SHOW_ENDS {
@@ -294,8 +292,10 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
             Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,Some(Thin.val(word_radius))))
         });
     }
+    if num==1 && !avoid_centre {
+        ppos=ppos.rotate(-total_diff/2.0);
+    };
     for _ in 0..num as i32 {
-        ppos=ppos.rotate(-diff);
         cpos = ppos.into();
         cpos.shove(centre);
         shapes.push(if is_line {
@@ -303,8 +303,9 @@ fn add_marks(marks:&Marks,centre:Cart,(start,end):(Polar,Polar),avoid_centre:boo
             end.shove(centre);
             Box::new(Line::new(cpos,end,Thick.val(word_radius),true))
         } else {
-            Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.1,None))
+            Box::new(Circle::new(cpos,std_dist*CONSONANT_MODIFIER*0.2,None))
         });
+        ppos=ppos.rotate(-diff);
     }
     if SHOW_ENDS {
         ppos = ppos.rotate(-diff);
